@@ -36,10 +36,10 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if (array_key_exists("page", $params)) {
+        if ($this->checkKey("page", $params)) {
             $query["page"] = $params["page"];
         }
-        if (array_key_exists("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/subcommunities";
@@ -110,15 +110,11 @@ class DSpaceDataService {
         $description = "";
         $shortDescription = "";
         if ($this->checkKey("metadata", $collection)) {
-            if (array_key_exists("dc.description.abstract", $collection["metadata"])) {
+            if ($this->checkKey("dc.description.abstract", $collection["metadata"])) {
                 $shortDescription = $collection["metadata"]["dc.description.abstract"][0]["value"];
-            } else {
-                error_log("WARNING: A short description was not found for " . $collection["name"]);
             }
-            if (array_key_exists("dc.description", $collection["metadata"])) {
+            if ($this->checkKey("dc.description", $collection["metadata"])) {
                 $description = $collection["metadata"]["dc.description"][0]["value"];
-            } else {
-                error_log("WARNING: A full description was not found for " . $collection["name"]);
             }
         }
         return array(
@@ -155,16 +151,17 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if (array_key_exists("page", $params)) {
+        if ($this->checkKey("page", $params)) {
             $query["page"] = $params["page"];
         }
-        if (array_key_exists("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/discover/search/objects";
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
+        echo $url;
         $restResponse = $this->getRestApiResponse($url);
         $itemsArr = array();
         if ($this->checkKey("searchResult", $restResponse["_embedded"])) {
@@ -186,7 +183,9 @@ class DSpaceDataService {
                             if ($this->checkKey('dc.description.abstract', $metadata)) {
                                 $itemAssocArray["description"] = $metadata["dc.description.abstract"][0]["value"];
                             }
-                            $itemAssocArray["owningCollection"] = $object["_links"]["owningCollection"];
+                            if ($this->checkKey('owningCollection', $object["_links"]["owningCollection"])) {
+                                $itemAssocArray["owningCollection"] = $object["_links"]["owningCollection"];
+                            }
                             if ($this->checkKey('thumbnail', $object["_links"])) {
                                 $logo = $this->getItemThumbnail($object["uuid"]);
                                 $itemAssocArray["logo"] = $logo;
@@ -248,10 +247,10 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if (array_key_exists("page", $params)) {
+        if ($this->checkKey("page", $params)) {
             $query["page"] = $params["page"];
         }
-        if (array_key_exists("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/collections";
@@ -276,10 +275,10 @@ class DSpaceDataService {
             "embed" => "thumbnail",
             "dsoType" => "ITEM"
         );
-        if (array_key_exists("page", $params)) {
+        if ($this->checkKey("page", $params)) {
             $query["page"] = $params["page"];
         }
-        if (array_key_exists("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $query["scope"] = $uuid;
@@ -313,13 +312,13 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if (array_key_exists("page", $params)) {
+        if ($this->checkKey("page", $params)) {
             $query["page"] = $params["page"];
         }
-        if (array_key_exists("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params)) {
             $query["pageSize"] = $params["pageSize"];
         }
-        if (array_key_exists("reverse", $params)) {
+        if ($this->checkKey("reverse", $params)) {
             $reverse = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/collections";
@@ -356,10 +355,10 @@ class DSpaceDataService {
         $metadata = $item["metadata"];
         $description = "";
         $author = "";
-        if (array_key_exists("dc.description.abstract", $metadata)) {
+        if ($this->checkKey("dc.description.abstract", $metadata)) {
             $author = $metadata["dc.contributor.author"][0]["value"];
         }
-        if (array_key_exists("dc.description.abstract", $metadata)) {
+        if ($this->checkKey("dc.description.abstract", $metadata)) {
             $description = $this->formatDescription($metadata["dc.description.abstract"][0]["value"]);
         }
         return array (
@@ -444,25 +443,25 @@ class DSpaceDataService {
         $description = "";
         $label = "";
 
-        if (array_key_exists("dc.title", $image["metadata"])) {
+        if ($this->checkKey("dc.title", $image["metadata"])) {
             $title = $image["metadata"]["dc.title"][0]["value"];
         }
-        if (array_key_exists("iiif.label", $image["metadata"])) {
+        if ($this->checkKey("iiif.label", $image["metadata"])) {
             $label = $image["metadata"]["iiif.label"][0]["value"];
         }
-        if (array_key_exists("dc.description", $image["metadata"])) {
+        if ($this->checkKey("dc.description", $image["metadata"])) {
             $description = $image["metadata"]["dc.description"][0]["value"];
         }
-        if (array_key_exists("dc.format.medium", $image["metadata"])) {
+        if ($this->checkKey("dc.format.medium", $image["metadata"])) {
             $medium = $image["metadata"]["dc.format.medium"][0]["value"];
         }
-        if (array_key_exists("dc.format.extent", $image["metadata"])) {
+        if ($this->checkKey("dc.format.extent", $image["metadata"])) {
             $dimensions = $image["metadata"]["dc.format.extent"][0]["value"];
         }
-        if (array_key_exists("dc.subject.other", $image["metadata"])) {
+        if ($this->checkKey("dc.subject.other", $image["metadata"])) {
             $subject = $image["metadata"]["dc.subject.other"][0]["value"];
         }
-        if (array_key_exists("dc.type", $image["metadata"])) {
+        if ($this->checkKey("dc.type", $image["metadata"])) {
             $type = $image["metadata"]["dc.type"][0]["value"];
         }
 
@@ -587,8 +586,8 @@ class DSpaceDataService {
         $thumbnail = "";
         $mainImage = "";
         foreach ($bitstreams as $image) {
-            if (array_key_exists("_links", $image)) {
-                if (array_key_exists("self", $image["_links"])) {
+            if ($this->checkKey("_links", $image)) {
+                if ($this->checkKey("self", $image["_links"])) {
                     $thumbnail = $this->getThumbnail($image["_links"]["self"]["href"]);
                     $mainImage = $image["_links"]["content"]["href"];
                 }
@@ -615,10 +614,10 @@ class DSpaceDataService {
     private function getImageUrl(array $linkData) : string
     {
         if ($linkData) {
-            if (array_key_exists("_links", $linkData)) {
+            if ($this->checkKey("_links", $linkData)) {
                 $imageLinks = $linkData["_links"];
                 if ($imageLinks) {
-                    if (array_key_exists("content", $imageLinks)) {
+                    if ($this->checkKey("content", $imageLinks)) {
                         return ($linkData["_links"]["content"]["href"]);
                     }
                 }
@@ -638,7 +637,7 @@ class DSpaceDataService {
         if($array) {
             $found = array_key_exists($key, $array);
             if (!$found) {
-                error_log("WARNING: Could not find key: " . $key);
+                error_log("WARNING: Could not find the key '" . $key . "' in the DSpace response data.");
             }
             return $found;
         } else {
@@ -646,16 +645,6 @@ class DSpaceDataService {
             happen. There was likely a problem parsing the Dspace API response.");
         }
         return false;
-    }
-
-    /**
-     * Utility method for throwing exception.
-     * @param $message string the message to log
-     * @throws Exception
-     */
-    private function error(string $message) {
-        throw new Exception($message);
-
     }
 
     /**
