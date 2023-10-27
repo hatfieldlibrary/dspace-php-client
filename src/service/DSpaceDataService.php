@@ -641,6 +641,7 @@ class DSpaceDataService {
             }
             return $found;
         } else {
+            // It might be a good idea to throw an exception here.
             error_log("WARNING: A null array was provided to the checkKey function. This should not
             happen. There was likely a problem parsing the Dspace API response.");
         }
