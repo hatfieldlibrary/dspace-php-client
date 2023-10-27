@@ -13,11 +13,9 @@ class DSpaceDataService {
     private const ITEM = "ITEM";
     private const COMMUNITY = "COMMUNITY";
     private const COLLECTION = "COLLECTION";
-
     private const DISCOVERY = "DISCOVERY";
     private const BUNDLE = "BUNDLE";
     private const BITSTREAM = "BITSTREAM";
-
     private const PARAMS = "REQUEST PARAMETER";
 
     public function __construct() {
@@ -190,7 +188,7 @@ class DSpaceDataService {
                             if ($this->checkKey('dc.description.abstract', $metadata, self::ITEM)) {
                                 $itemAssocArray["description"] = $metadata["dc.description.abstract"][0]["value"];
                             }
-                            if ($this->checkKey('owningCollection', $object["_links"]["owningCollection"],
+                            if ($this->checkKey('owningCollection', $object["_links"],
                                 self::ITEM)) {
                                 $itemAssocArray["owningCollection"] = $object["_links"]["owningCollection"];
                             }
@@ -649,18 +647,17 @@ class DSpaceDataService {
      */
     private function checkKey(string $key, mixed $array, string $type = ""): bool
     {
-        if($array) {
+        if(!is_null($array)) {
             $found = array_key_exists($key, $array);
-
-            // Exclude missing bitstream metadata from log unless in debug mode
-            if (!$found && (strcmp($type, self::BITSTREAM) !== 0 || $this->config["debug"])) {
-                error_log("INFO: Could not find the key '" . $key . "' in the DSpace " . $type . " data.");
+            // Set debug to true in configuration to see missing metadata fields in the log.
+            if (!$found && $this->config["debug"]) {
+                error_log("DEBUG: Could not find the key '" . $key . "' in the DSpace " . $type . " data.");
             }
             return $found;
         } else {
-            // It might be a good idea to throw an exception here.
-            error_log("WARNING: A null array was provided to the checkKey function. This should not
-            happen. There was likely a problem parsing the Dspace API response.");
+                // NOTE: It might be a good idea to throw an exception here.
+                error_log("WARNING: A null array was provided to the checkKey function. This should not
+                happen. There was likely a problem parsing the Dspace API response.");
         }
         return false;
     }

@@ -25,7 +25,7 @@ Class Configuration {
              */
             "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
             /**
-             * Set to true if you want to log missing bitstream metadata.
+             * Set to true if you want to debug missing metadata.
              */
             "debug" => false
         );
