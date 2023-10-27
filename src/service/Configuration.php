@@ -23,7 +23,11 @@ Class Configuration {
             /**
              * Default image used in no thumbnail is available. (deprecated)
              */
-            "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg"
+            "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
+            /**
+             * Set to true if you want to log missing bitstream metadata.
+             */
+            "debug" => false
         );
     }
 

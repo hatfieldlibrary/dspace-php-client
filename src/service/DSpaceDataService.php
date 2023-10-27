@@ -10,6 +10,16 @@ class DSpaceDataService {
 
     private array $config;
 
+    private const ITEM = "ITEM";
+    private const COMMUNITY = "COMMUNITY";
+    private const COLLECTION = "COLLECTION";
+
+    private const DISCOVERY = "DISCOVERY";
+    private const BUNDLE = "BUNDLE";
+    private const BITSTREAM = "BITSTREAM";
+
+    private const PARAMS = "REQUEST PARAMETER";
+
     public function __construct() {
         $settings = new Configuration();
         $this->config = $settings->getConfig();
@@ -36,10 +46,10 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if ($this->checkKey("page", $params)) {
+        if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
         }
-        if ($this->checkKey("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/subcommunities";
@@ -47,7 +57,7 @@ class DSpaceDataService {
             $url .= '?' . http_build_query($query);
         }
         $Subcommittees = $this->getRestApiResponse($url);
-        if ($this->checkKey("subcommunities", $Subcommittees["_embedded"])) {
+        if ($this->checkKey("subcommunities", $Subcommittees["_embedded"], self::COMMUNITY)) {
             foreach ($Subcommittees["_embedded"]["subcommunities"] as $subComm) {
                 $logoHref = $this->getCommunityLogo($subComm["uuid"]);
                 $count = $this->getCollectionCount($subComm["uuid"]);
@@ -101,19 +111,16 @@ class DSpaceDataService {
     public function getCollection(string $uuid): array
     {
         $url = $this->config["base"] . "/core/collections/" . $uuid;
-        if (!empty($query)) {
-            $url .= '?' . http_build_query($query);
-        }
         $collection = $this->getRestApiResponse($url);
         $logoHref = $this->getCollectionLogo($collection["uuid"]);
         $itemCount = $this->getItemCount($collection["uuid"]);
         $description = "";
         $shortDescription = "";
-        if ($this->checkKey("metadata", $collection)) {
-            if ($this->checkKey("dc.description.abstract", $collection["metadata"])) {
+        if ($this->checkKey("metadata", $collection, self::COLLECTION)) {
+            if ($this->checkKey("dc.description.abstract", $collection["metadata"], self::COLLECTION)) {
                 $shortDescription = $collection["metadata"]["dc.description.abstract"][0]["value"];
             }
-            if ($this->checkKey("dc.description", $collection["metadata"])) {
+            if ($this->checkKey("dc.description", $collection["metadata"], self::COLLECTION)) {
                 $description = $collection["metadata"]["dc.description"][0]["value"];
             }
         }
@@ -151,10 +158,10 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if ($this->checkKey("page", $params)) {
+        if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
         }
-        if ($this->checkKey("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/discover/search/objects";
@@ -164,29 +171,30 @@ class DSpaceDataService {
         echo $url;
         $restResponse = $this->getRestApiResponse($url);
         $itemsArr = array();
-        if ($this->checkKey("searchResult", $restResponse["_embedded"])) {
-            if ($this->checkKey("_embedded", $restResponse["_embedded"]["searchResult"])) {
+        if ($this->checkKey("searchResult", $restResponse["_embedded"], self::DISCOVERY)) {
+            if ($this->checkKey("_embedded", $restResponse["_embedded"]["searchResult"], self::DISCOVERY)) {
                 foreach ($restResponse["_embedded"]["searchResult"]["_embedded"] as &$restElement) {
                     foreach ($restElement as &$item) {
                         $itemAssocArray = array();
-                        if ($this->checkKey("indexableObject", $item["_embedded"])) {
+                        if ($this->checkKey("indexableObject", $item["_embedded"], self::ITEM)) {
                             $object = ($item["_embedded"]["indexableObject"]);
                             $itemAssocArray["name"] = $object["name"];
                             $itemAssocArray["uuid"] = $object["uuid"];
                             $metadata = $object["metadata"];
-                            if ($this->checkKey('dc.contributor.author', $metadata)) {
+                            if ($this->checkKey('dc.contributor.author', $metadata, self::ITEM)) {
                                 $itemAssocArray["author"] = $metadata["dc.contributor.author"][0]["value"];
                             }
-                            if ($this->checkKey('dc.date.issued', $metadata)) {
+                            if ($this->checkKey('dc.date.issued', $metadata, self::ITEM)) {
                                 $itemAssocArray["date"] = $metadata["dc.date.issued"][0]["value"];
                             }
-                            if ($this->checkKey('dc.description.abstract', $metadata)) {
+                            if ($this->checkKey('dc.description.abstract', $metadata, self::ITEM)) {
                                 $itemAssocArray["description"] = $metadata["dc.description.abstract"][0]["value"];
                             }
-                            if ($this->checkKey('owningCollection', $object["_links"]["owningCollection"])) {
+                            if ($this->checkKey('owningCollection', $object["_links"]["owningCollection"],
+                                self::ITEM)) {
                                 $itemAssocArray["owningCollection"] = $object["_links"]["owningCollection"];
                             }
-                            if ($this->checkKey('thumbnail', $object["_links"])) {
+                            if ($this->checkKey('thumbnail', $object["_links"], self::ITEM)) {
                                 $logo = $this->getItemThumbnail($object["uuid"]);
                                 $itemAssocArray["logo"] = $logo;
                             }
@@ -241,16 +249,16 @@ class DSpaceDataService {
      * @param $params array optional DSpace request parameters
      * @return string
      */
-    public function getCollectionCount($uuid, $params = []): string
+    public function getCollectionCount(string $uuid, array $params = []): string
     {
         $query = array (
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if ($this->checkKey("page", $params)) {
+        if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
         }
-        if ($this->checkKey("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/collections";
@@ -275,10 +283,10 @@ class DSpaceDataService {
             "embed" => "thumbnail",
             "dsoType" => "ITEM"
         );
-        if ($this->checkKey("page", $params)) {
+        if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
         }
-        if ($this->checkKey("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
         }
         $query["scope"] = $uuid;
@@ -287,7 +295,7 @@ class DSpaceDataService {
             $url .= '?' . http_build_query($query);
         }
         $item = $this->getRestApiResponse($url);
-        if ($this->checkKey("totalElements", $item["_embedded"]["searchResult"]["page"])) {
+        if ($this->checkKey("totalElements", $item["_embedded"]["searchResult"]["page"], self::DISCOVERY)) {
             return $item["_embedded"]["searchResult"]["page"]["totalElements"];
         }
         return "unknown";
@@ -312,14 +320,11 @@ class DSpaceDataService {
             "page" => 0,
             "pageSize" => $this->config["defaultPageSize"]
         );
-        if ($this->checkKey("page", $params)) {
+        if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
         }
-        if ($this->checkKey("pageSize", $params)) {
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
-        }
-        if ($this->checkKey("reverse", $params)) {
-            $reverse = $params["pageSize"];
         }
         $url = $this->config["base"] . "/core/communities/" . $uuid . "/collections";
         if (!empty($query)) {
@@ -355,18 +360,22 @@ class DSpaceDataService {
         $metadata = $item["metadata"];
         $description = "";
         $author = "";
-        if ($this->checkKey("dc.description.abstract", $metadata)) {
+        $owningCollection = "";
+        if ($this->checkKey("dc.description.abstract", $metadata, self::ITEM)) {
             $author = $metadata["dc.contributor.author"][0]["value"];
         }
-        if ($this->checkKey("dc.description.abstract", $metadata)) {
+        if ($this->checkKey("dc.description.abstract", $metadata, self::ITEM)) {
             $description = $this->formatDescription($metadata["dc.description.abstract"][0]["value"]);
+        }
+        if ($this->checkKey("owningCollection", $item["_links"], self::ITEM)) {
+            $owningCollection = $item["_links"]["owningCollection"]["href"];
         }
         return array (
             "name" => $item["name"],
             "uuid" => $item["uuid"],
             "description" => $description,
             "creator" => $author,
-            "owningCollection" => $item["_links"]["owningCollection"]["href"],
+            "owningCollection" => $owningCollection,
             "images" => $images
         );
     }
@@ -443,25 +452,25 @@ class DSpaceDataService {
         $description = "";
         $label = "";
 
-        if ($this->checkKey("dc.title", $image["metadata"])) {
+        if ($this->checkKey("dc.title", $image["metadata"], self::BITSTREAM)) {
             $title = $image["metadata"]["dc.title"][0]["value"];
         }
-        if ($this->checkKey("iiif.label", $image["metadata"])) {
+        if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
             $label = $image["metadata"]["iiif.label"][0]["value"];
         }
-        if ($this->checkKey("dc.description", $image["metadata"])) {
+        if ($this->checkKey("dc.description", $image["metadata"], self::BITSTREAM)) {
             $description = $image["metadata"]["dc.description"][0]["value"];
         }
-        if ($this->checkKey("dc.format.medium", $image["metadata"])) {
+        if ($this->checkKey("dc.format.medium", $image["metadata"], self::BITSTREAM)) {
             $medium = $image["metadata"]["dc.format.medium"][0]["value"];
         }
-        if ($this->checkKey("dc.format.extent", $image["metadata"])) {
+        if ($this->checkKey("dc.format.extent", $image["metadata"], self::BITSTREAM)) {
             $dimensions = $image["metadata"]["dc.format.extent"][0]["value"];
         }
-        if ($this->checkKey("dc.subject.other", $image["metadata"])) {
+        if ($this->checkKey("dc.subject.other", $image["metadata"], self::BITSTREAM)) {
             $subject = $image["metadata"]["dc.subject.other"][0]["value"];
         }
-        if ($this->checkKey("dc.type", $image["metadata"])) {
+        if ($this->checkKey("dc.type", $image["metadata"], self::BITSTREAM)) {
             $type = $image["metadata"]["dc.type"][0]["value"];
         }
 
@@ -541,7 +550,6 @@ class DSpaceDataService {
     {
         $collectionMap = array();
         foreach ($communityCollections["_embedded"]["collections"] as $collection) {
-
             $logoHref = $this->getCollectionLogo($collection["uuid"]);
             $count = $this->getItemCount($collection["uuid"]);
             $current = array(
@@ -575,23 +583,29 @@ class DSpaceDataService {
     private function getBitstreams(array $bundle): array
     {
         $bitstreams = array();
-        if ($this->checkKey("bitstreams", $bundle["_embedded"])) {
-            if ($this->checkKey("_embedded", $bundle["_embedded"]["bitstreams"])) {
-                if ($this->checkKey("bitstreams", $bundle["_embedded"]["bitstreams"]["_embedded"])) {
+        if ($this->checkKey("bitstreams", $bundle["_embedded"], self::BUNDLE)) {
+            if ($this->checkKey("_embedded", $bundle["_embedded"]["bitstreams"], self::BUNDLE)) {
+                if ($this->checkKey("bitstreams", $bundle["_embedded"]["bitstreams"]["_embedded"],
+                    self::BUNDLE)) {
                     $bitstreams = $bundle["_embedded"]["bitstreams"]["_embedded"]["bitstreams"];
                 }
             }
         }
         $imageArr = array();
-        $thumbnail = "";
-        $mainImage = "";
         foreach ($bitstreams as $image) {
-            if ($this->checkKey("_links", $image)) {
-                if ($this->checkKey("self", $image["_links"])) {
+            $thumbnail = "";
+            $mainImage = "";
+            $mimeType = "";
+            if ($this->checkKey("_links", $image, self::BITSTREAM)) {
+                if ($this->checkKey("self", $image["_links"], self::BITSTREAM)) {
                     $thumbnail = $this->getThumbnail($image["_links"]["self"]["href"]);
                     $mainImage = $image["_links"]["content"]["href"];
                 }
-                $mimeType = $image["_embedded"]["format"]["mimetype"];
+                if ($this->checkKey("_embedded", $image, self::BITSTREAM)) {
+                    if ($this->checkKey("format", $image["_embedded"], self::BITSTREAM)) {
+                        $mimeType = $image["_embedded"]["format"]["mimetype"];
+                    }
+                }
             }
             $current = array (
                 "name" => $image["name"],
@@ -614,10 +628,10 @@ class DSpaceDataService {
     private function getImageUrl(array $linkData) : string
     {
         if ($linkData) {
-            if ($this->checkKey("_links", $linkData)) {
+            if ($this->checkKey("_links", $linkData, self::BITSTREAM)) {
                 $imageLinks = $linkData["_links"];
                 if ($imageLinks) {
-                    if ($this->checkKey("content", $imageLinks)) {
+                    if ($this->checkKey("content", $imageLinks, self::BITSTREAM)) {
                         return ($linkData["_links"]["content"]["href"]);
                     }
                 }
@@ -630,14 +644,17 @@ class DSpaceDataService {
      * Utility method for checking whether a key exists in an array.
      * @param $key string the key to look for
      * @param $array mixed the array that contains the key or null
+     * @param $type string optional DSO type for logging
      * @return bool
      */
-    private function checkKey(string $key, mixed $array): bool
+    private function checkKey(string $key, mixed $array, string $type = ""): bool
     {
         if($array) {
             $found = array_key_exists($key, $array);
-            if (!$found) {
-                error_log("WARNING: Could not find the key '" . $key . "' in the DSpace response data.");
+
+            // Exclude missing bitstream metadata from log unless in debug mode
+            if (!$found && (strcmp($type, self::BITSTREAM) !== 0 || $this->config["debug"])) {
+                error_log("INFO: Could not find the key '" . $key . "' in the DSpace " . $type . " data.");
             }
             return $found;
         } else {
