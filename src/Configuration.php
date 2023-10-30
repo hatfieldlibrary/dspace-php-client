@@ -2,7 +2,7 @@
 
 Class Configuration {
 
-    private $config;
+    private array $config;
 
     public function __construct() {
         // DSpace API settings
@@ -19,7 +19,7 @@ Class Configuration {
             /**
              * The maximum number of embedded bitstreams (e.g. images) returned when retrieving images.
              */
-            "defaultEmbeddedBitstreamParam" => "bitstreams=30",
+            "defaultEmbeddedBitstreamParam" => "30",
             /**
              * Default image used in no thumbnail is available. (deprecated)
              */
