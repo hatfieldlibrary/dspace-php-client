@@ -9,7 +9,16 @@ class Controller
 
     private const ENDPOINTS = array (
         array(
-            "endpoint" => "subcommunities/uuid -- communities / subcommunities",
+            "endpoint" => "endpoints",
+            "response" => "The list of endpoints",
+        ),
+        array(
+            "endpoint" => "sections/uuid",
+            "response" => "The section with the provided uuid",
+        ),
+        array(
+            "endpoint" => "sections/uuid/subsections",
+            "response" => "Subsections in the section with the provided uuid",
             "optional parameters" =>
             array(
                 array("name"=>"page",
@@ -24,17 +33,84 @@ class Controller
             )
             )
         ),
-        "collections/uuid",
-        "collectionItems/uuid  - collections / items  ",
-        "items/uuid[?format=true|false&bundle=bundleName]",
-        "communityLogo/uuid",
-        "collectionLogo/uuid",
-        "itemThumbnail/uuid",
-        "collectionCount/uuid",
-        "communityCollections/uuid communiyies / collections",
-        "link/uuid",
-        "bitstreamData/uuid"
-
+        array(
+            "endpoint" => "sections/uuid/collections",
+            "response" => "Collections in the section with the provided uuid",
+            "optional parameters" =>
+                array(
+                    array("name"=>"page",
+                        "value" => "the current page in pagination",
+                        "default" => "0",
+                        "optional"=> "true"
+                    ),
+                    array("name"=>"pageSize",
+                        "value" => "the number of items per page",
+                        "default" => "40",
+                        "optional"=> "true"
+                    )
+                )
+        ),
+        array(
+            "endpoint" => "collections/uuid",
+            "response" => "The collection with the provided uuid",
+        ),
+        array(
+            "endpoint" => "collections/uuid/items",
+            "response" => "The items in the collection with the provided uuid",
+            "optional parameters" =>
+                array(
+                    array("name"=>"page",
+                        "value" => "the current page in pagination",
+                        "default" => "0",
+                        "optional"=> "true"
+                    ),
+                    array("name"=>"pageSize",
+                        "value" => "the number of items per page",
+                        "default" => "40",
+                        "optional"=> "true"
+                    )
+                )
+        ),
+        array(
+            "endpoint" => "items/uuid",
+            "response" => "The item with the provided uuid",
+            "optional parameters" =>
+                array(
+                    array("name"=>"format",
+                        "value" => "if true will attempt to format the description with html paragraph tags",
+                        "default" => "false",
+                        "optional"=> "true"
+                    )
+                )
+        ),
+        array(
+            "endpoint" => "items/uuid/files",
+            "response" => "The files for the item with the provided uuid",
+            "optional parameters" =>
+                array(
+                    array("name"=>"bundle",
+                        "value" => "the DSpace bundle containing files",
+                        "default" => "ORIGINAL",
+                        "optional"=> "true"
+                    )
+                )
+        ),
+        array(
+            "endpoint" => "items/uuid/thumbnail",
+            "response" => "The link to the logo image for the item with the provided uuid",
+        ),
+        array(
+            "endpoint" => "section/uuid/logo",
+            "response" => "The link to the logo image for the item with the provided uuid",
+        ),
+        array(
+            "endpoint" => "collection/uuid/logo",
+            "response" => "The link to the thumbnail image for the item with the provided uuid",
+        ),
+        array(
+            "endpoint" => "collection/uuid/count",
+            "response" => "The number of items in the collection with the provided uuid",
+        )
     );
 
     public function __construct()
