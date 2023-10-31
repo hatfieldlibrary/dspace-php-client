@@ -81,8 +81,7 @@ class Item implements Model {
             "date" => $this->date,
             "description" => $this->description,
             "owningCollection" => $this->owningCollection,
-            "logo" => $this->logo,
-            "files" => $this->bitstreams
+            "logo" => $this->logo
         );
     }
 

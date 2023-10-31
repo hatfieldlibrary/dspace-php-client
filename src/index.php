@@ -6,49 +6,91 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $uri = explode( '/', $uri );
 
 $utils = new Utils();
-$uri = $utils->getUriSegments();
 $controller = new Controller();
-// lists the available endpoints
-if (count($uri) == 2) {
-    if($uri[1] == "api") {
-        $controller->getEndpoints();
-    } else {
-        $utils->outputJSON("404 Not Found. Method not found.", array('HTTP/1.1 404 Not Found. '));
-    }
+
+$uri = $utils->getUriSegments();
+$response = "";
+if (count($uri) < 3) {
+    error_log("ERROR: No method was provided in request.");
+    $utils->outputJSON("404 Not Found. No method provided in request.", array('HTTP/1.1 404 Not Found.'));
 }
-// the api endpoints
-$method = $uri[2];
-if ($method) {
+if (count($uri) == 3) {
+    $resource = $uri[2];
+    $response = callController($controller, $utils, $resource);
+}
+if (count($uri) == 4) {
+    $resource = $uri[2];
+    $uuid = $uri[3];
+    $response = callController($controller, $utils, $resource, $uuid);
+}
+if (count($uri) == 5) {
+    $uuid = $uri[3];
+    $resource = $uri[2];
+    $qualifier = $uri[4];
+    $method = $resource . $qualifier;
+    $response = callController($controller, $utils, $method, $uuid);
+}
+//$method = $uri[2];
+//if ($method) {
+//
+//    $r = "";
+//    // zero parameter endpoints
+//    if (count($uri) == 3) {
+//
+//        try {
+//            set_error_handler(
+//                function ($err_severity, $err_msg, $err_file, $err_line)
+//                { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },
+//                E_WARNING
+//            );
+//            $r = $controller->{$method};
+//            restore_error_handler();
+//        } catch (Exception $err) {
+//            $utils->outputJSON("Invalid request.", array("HTTP/1.1 400 Invalid Request"));
+//            error_log($err);
+//        }
+//    }
+//    // endpoints with uuid parameter
+//    $uuid = "";
+//    if (count($uri) > 3) {
+//        $uuid = $uri[3];
+//        $r = $controller->{$method}($uuid);
+//    }
+    echo $response;
+
+//} else {
+//    error_log("ERROR: No method was provided in request.");
+//    $utils->outputJSON("404 Not Found. No method provided in request.", array('HTTP/1.1 404 Not Found.'));
+//}
+
+function checkControllerMethod(object & $controller, object & $utils, string $method): void
+{
     if (!method_exists($controller, $method)) {
         error_log("ERROR: API function not found.");
         $utils->outputJSON("404 Not Found. An valid API endpoint was not provided in the request.", array('HTTP/1.1 404 Not Found. '));
     }
-    $r = "";
-    // zero parameter endpoints
-    if (count($uri) == 3) {
-        try {
-            set_error_handler(
-                function ($err_severity, $err_msg, $err_file, $err_line)
-                { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },
-                E_WARNING
-            );
-            $r = $controller->{$method};
-            restore_error_handler();
-        } catch (Exception $err) {
-            $utils->outputJSON("Invalid request.", array("HTTP/1.1 400 Invalid Request"));
-            error_log($err);
+}
+function callController(object & $controller, object & $utils, string $method, string $uuid = "",
+                        string $qualifier = ""): mixed
+{
+    checkControllerMethod($controller, $utils, $method);
+    try {
+        set_error_handler(
+            function ($err_severity, $err_msg, $err_file, $err_line)
+            { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },
+            E_WARNING
+        );
+        if ($uuid) {
+            $resp = $controller->{$method}($uuid);
+        } else {
+            $resp = $controller->{$method}();
         }
+        restore_error_handler();
+        return $resp;
+    } catch (Exception $err) {
+        $utils->outputJSON("Invalid request.", array("HTTP/1.1 400 Invalid Request"));
+        error_log($err);
     }
-    // endpoints with uuid parameter
-    $uuid = "";
-    if (count($uri) > 3) {
-        $uuid = $uri[3];
-        $r = $controller->{$method}($uuid);
-    }
-    echo $r;
-
-} else {
-    error_log("ERROR: No method was provided in request.");
-    $utils->outputJSON("404 Not Found. No method provided in request.", array('HTTP/1.1 404 Not Found.'));
+    return null;
 }
 

@@ -29,7 +29,7 @@ interface DSpaceDataService {
      * )
      * </code>
      */
-    function getOwningCollection(string $href): array;
+    function getOwningCollection(string $uuid): array;
 
     /**
      * Gets information about a specific DSpace collection.
@@ -133,7 +133,7 @@ interface DSpaceDataService {
      * )
      * </code>
      */
-    function getItem(string $uuid, bool $formatDescription = false, string $bundleName = "ORIGINAL"): array;
+    function getItem(string $uuid, bool $formatDescription = false): array;
 
     /**
      * Gets the bitstreams (e.g. image files) for a DSpace item.
@@ -174,6 +174,8 @@ interface DSpaceDataService {
      * )
      * </code>
      */
-    function getBitstreamData(string $uuid): array;
+  //  function getBitstreamData(string $uuid): array;
+
+    function getCommunity(string $uuid): array;
 
 }

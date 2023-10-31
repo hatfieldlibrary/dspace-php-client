@@ -10,7 +10,8 @@ require_once __DIR__ . "/../Utils.php";
  * PHP service class for retrieving Community, Collection, Item, and Bitstream
  * information from the DSpace REST API.
  */
-class DSpaceDataServiceImpl implements DSpaceDataService {
+class DSpaceDataServiceImpl implements DSpaceDataService
+{
 
     private array $config;
 
@@ -28,11 +29,26 @@ class DSpaceDataServiceImpl implements DSpaceDataService {
 
     private const REQUEST_FAILED = "DSPACE_REQUEST_ERROR";
 
-    public function __construct() {
+    public function __construct()
+    {
         $settings = new Configuration();
         $this->config = $settings->getConfig();
         $this->dataObjects = new DataObjects();
         $this->utils = new Utils();
+    }
+
+    public function getCommunity(string $uuid): array {
+        $this->checkUUID($uuid);
+        $url = $this->config["base"] . "/core/communities/" . $uuid;
+        $model = $this->dataObjects->getCommunityModel();
+        $community = $this->getRestApiResponse($url);
+        $logoHref = $this->getCommunityLogo($community["uuid"]);
+        $count = $this->getCollectionCount($community["uuid"]);
+        $model->setName($community["name"]);
+        $model->setUUID($community["uuid"]);
+        $model->setLogo($logoHref);
+        $model->setCount($count);
+        return $model->getData();
     }
 
     public function getSubCommunities(string $uuid, array $params = []): array
@@ -70,12 +86,23 @@ class DSpaceDataServiceImpl implements DSpaceDataService {
     }
 
 
-    public function getOwningCollection(string $href): array
+    public function getOwningCollectionByHref(string $href): array
     {
         $collection = $this->getRestApiResponse($href);
         return array(
             "name" => $collection["name"],
             "href" => $href
+        );
+    }
+
+    public function getOwningCollection(string $uuid): array
+    {
+        $uri = $this->config["base"] . "/core/items/" . $uuid . "/owningCollection";
+        $collection = $this->getRestApiResponse($uri);
+        return array(
+            "name" => $collection["name"],
+            "uuid" => $collection["uuid"],
+            "href" => $collection["_links"]["self"]["href"]
         );
     }
 
@@ -257,11 +284,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService {
         return $this->getCollections($communityCollections, $reverseOrder);
     }
 
-    public function getItem(string $uuid, bool $formatDescription = false, string $bundleName = "ORIGINAL"): array
+    public function getItem(string $uuid, bool $formatDescription = false): array
     {
         $url = $this->config["base"] . "/core/items/" . $uuid;
         $item = $this->getRestApiResponse($url);
-        $files = $this->getItemFiles($uuid, $bundleName);
         $model = $this->dataObjects->getItemModel();
         $metadata = $item["metadata"];
         $model->setName($item["name"]);
@@ -279,7 +305,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService {
         if ($this->checkKey("owningCollection", $item["_links"], self::ITEM)) {
             $model->setOwningCollection($item["_links"]["owningCollection"]["href"]);
         }
-        $model->setBitstreams($files);
         return $model->getData();
     }
 
@@ -315,7 +340,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService {
         return $this->config["base"] . "/core/bitstreams/" . $uuid . "/content";
     }
 
-    public function getBitstreamData(string $uuid): array
+    private function getBitstreamData(string $uuid): array
     {
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid;
         $image = $this->getRestApiResponse($url);
