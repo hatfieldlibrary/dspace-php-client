@@ -11,6 +11,7 @@ Class Configuration {
              * Base url of DSpace REST API
              */
             "base"=>"http://localhost:8080/server/api",
+            //"base"=>"https://digitalcollections.willamette.edu/server/api",
             /**
              * The maximum number of items returned in requests for DSpace objects (e.g. Items, Collections).
              * Currently this class does not support pagination.
@@ -19,15 +20,16 @@ Class Configuration {
             /**
              * The maximum number of embedded bitstreams (e.g. images) returned when retrieving images.
              */
-            "defaultEmbeddedBitstreamParam" => "30",
+            "defaultEmbeddedBitstreamParam" => 300,
             /**
-             * Default image used in no thumbnail is available. (deprecated)
+             * Default image used in no thumbnail is available.
              */
             "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
             /**
-             * Set to true if you want to debug missing metadata.
+             * When true DSpace API responses and parsing errors are written to the log file.
+             * This is verbose. The value should be false when not actively debugging or developing.
              */
-            "debug" => false
+            "debug" => true
         );
     }
 

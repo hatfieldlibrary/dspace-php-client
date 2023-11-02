@@ -4,6 +4,8 @@ require __DIR__ . "/../model/Community.php";
 require __DIR__ . "/../model/Collection.php";
 require __DIR__ ."/../model/Item.php";
 require __DIR__ . "/../model/Bitstream.php";
+require __DIR__ . "/../model/Pagination.php";
+require __DIR__ . "/../model/ObjectsList.php";
 
 class DataObjects {
 
@@ -23,5 +25,13 @@ class DataObjects {
 
     public function getBitstreamModel() : Bitstream {
         return new Bitstream();
+    }
+
+    public function getPaginationModel() : Pagination {
+        return new Pagination();
+    }
+
+    public function getObjectsList() : ObjectsList {
+        return new ObjectsList();
     }
 }

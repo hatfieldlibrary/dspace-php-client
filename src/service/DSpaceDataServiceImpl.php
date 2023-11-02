@@ -1,6 +1,5 @@
 <?php
 
-
 require __DIR__ . "/../Configuration.php";
 require __DIR__ . "/DSpaceDataService.php";
 require __DIR__ . "/DataObjects.php";
@@ -39,11 +38,17 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function getCommunity(string $uuid): array {
         $this->checkUUID($uuid);
+        $query = array (
+            "embed" => "logo"
+        );
         $url = $this->config["base"] . "/core/communities/" . $uuid;
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
         $model = $this->dataObjects->getCommunityModel();
         $community = $this->getRestApiResponse($url);
         $logoHref = $this->getCommunityLogo($community["uuid"]);
-        $count = $this->getCollectionCount($community["uuid"]);
+        $count = $this->getCommunityCollectionCount($community["uuid"]);
         $model->setName($community["name"]);
         $model->setUUID($community["uuid"]);
         $model->setLogo($logoHref);
@@ -57,7 +62,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $subcommitteeMap = array();
         $query = array (
             "page" => 0,
-            "pageSize" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"],
+            "embed" => "logo,collections/logo"
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -69,20 +75,31 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
+        $result = $this->dataObjects->getObjectsList();
         $model = $this->dataObjects->getCommunityModel();
         $SubCommunities = $this->getRestApiResponse($url);
         if ($this->checkKey("subcommunities", $SubCommunities["_embedded"], self::COMMUNITY)) {
             foreach ($SubCommunities["_embedded"]["subcommunities"] as $subComm) {
-                $logoHref = $this->getCommunityLogo($subComm["uuid"]);
-                $count = $this->getCollectionCount($subComm["uuid"]);
                 $model->setName($subComm["name"]);
                 $model->setUUID($subComm["uuid"]);
-                $model->setLogo($logoHref);
-                $model->setCount($count);
+                $model->setLogo($this->getLogoFromResponse($subComm));
+                if ($this->checkKey("_embedded", $subComm, self::COMMUNITY)) {
+                    if ($this->checkKey("collections", $subComm["_embedded"], self::COMMUNITY)) {
+                        if ($this->checkKey("_embedded", $subComm["_embedded"]["collections"], self::COMMUNITY)) {
+                            if ($this->checkKey("collections", $subComm["_embedded"]["collections"]["_embedded"], self::COMMUNITY)) {
+                                $model->setCount(count($subComm["_embedded"]["collections"]["_embedded"]["collections"]));
+                            }
+                        }
+                    }
+                }
+
                 $subcommitteeMap[$subComm["name"]] = $model->getData();
             }
+            $pagination = $this->getPagination($SubCommunities["_embedded"]);
+            $result->setPagination($pagination);
+            $result->setObjects($subcommitteeMap);
         }
-        return $subcommitteeMap;
+        return $result->getData();
     }
 
 
@@ -111,7 +128,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $this->checkUUID($uuid);
         $url = $this->config["base"] . "/core/collections/" . $uuid;
         $collection = $this->getRestApiResponse($url);
-        $logoHref = $this->getCollectionLogo($collection["uuid"]);
+        $logoHref = $this->getLogoFromResponse($collection);
         $itemCount = $this->getItemCount($collection["uuid"]);
         $description = "";
         $shortDescription = "";
@@ -138,9 +155,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $this->checkUUID($uuid);
         $query = array (
             "scope" => $uuid,
+            "embed" => "thumbnail",
             "dsoType" => "ITEM",
             "page" => 0,
-            "pageSize" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"]
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -154,6 +172,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $restResponse = $this->getRestApiResponse($url);
         $itemsArr = array();
+        $result = $this->dataObjects->getObjectsList();
         if ($this->checkKey("searchResult", $restResponse["_embedded"], self::DISCOVERY)) {
             if ($this->checkKey("_embedded", $restResponse["_embedded"]["searchResult"], self::DISCOVERY)) {
                 foreach ($restResponse["_embedded"]["searchResult"]["_embedded"] as &$restElement) {
@@ -177,19 +196,50 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                                 self::ITEM)) {
                                 $model->setOwningCollection($object["_links"]["owningCollection"]["href"]);
                             }
-                            if ($this->checkKey('thumbnail', $object["_links"], self::ITEM)) {
-                                $model->setLogo($this->getItemThumbnail($object["uuid"]));
+                            if ($this->checkKey('thumbnail', $object["_embedded"], self::ITEM)) {
+                                if ($this->checkKey('_links', $object["_embedded"]["thumbnail"],
+                                    self::ITEM)) {
+                                    if ($this->checkKey('content', $object["_embedded"]["thumbnail"]["_links"],
+                                        self::ITEM)) {
+                                        if (
+                                            $this->checkKey('href', $object["_embedded"]["thumbnail"]["_links"]["content"],
+                                            self::ITEM)) {
+                                            $model->setLogo($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
+                                        }
+                                    }
+                                }
                             }
                             $itemsArr[] = $model->getData();
                         }
                     }
                 }
+                $pagination = $this->getPagination($restResponse["_embedded"]["searchResult"]);
+                $result->setPagination($pagination);
             }
         }
-        return $itemsArr;
+        $result->setObjects($itemsArr);
+        return $result->getData();
 
     }
 
+    private function getLogoFromResponse(?array $response) : string {
+        if ($response) {
+            if ($this->checkKey("_embedded", $response)) {
+                if ($this->checkKey("logo", $response["_embedded"])) {
+                    if ($this->checkKey("_links", $response["_embedded"]["logo"])) {
+                        if ($this->checkKey("content", $response["_embedded"]["logo"]["_links"])) {
+                            if ($this->checkKey("href", $response["_embedded"]["logo"]["_links"]["content"])) {
+                                return $response["_embedded"]["logo"]["_links"]["content"]["href"];
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            error_log("DSpace response did not include a logo");
+        }
+        return "";
+    }
     public function getCommunityLogo(string $uuid): string
     {
         $this->checkUUID($uuid);
@@ -212,11 +262,20 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $this->getImageUrl($thumbnailMetadata);
     }
 
-    public function getCollectionCount(string $uuid, array $params = []): string
+    private function getCollectionCountForCommunity(?array $collections) {
+        return count($collections);
+    }
+
+    /**
+     * @param string $communityUuid
+     * @param array $params
+     * @return string
+     */
+    public function getCommunityCollectionCount(string $communityUuid, array $params = []): string
     {
         $query = array (
             "page" => 0,
-            "pageSize" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"]
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -224,7 +283,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("pageSize", $params, self::PARAMS)) {
             $query["pageSize"] = $params["pageSize"];
         }
-        $url = $this->config["base"] . "/core/communities/" . $uuid . "/collections";
+        $url = $this->config["base"] . "/core/communities/" . $communityUuid . "/collections";
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
@@ -235,28 +294,30 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $count["page"]["totalElements"];
     }
 
-    private function getItemCount(string $uuid, array $params = []): string
+    /**
+     * DSpace currently does not return the item count with the collection responses.
+     * This method makes a title browse request for the collection and returns the
+     * number of items. It is not efficient and can be slow.
+     * @param string $uuid
+     * @param array $params
+     * @return string
+     */
+    public function getItemCount(string $uuid): string
     {
         $query = array (
             "page" => 0,
-            "pageSize" => $this->config["defaultPageSize"],
-            "embed" => "thumbnail",
+            "size" => 1,
+            "scope" => $uuid,
             "dsoType" => "ITEM"
         );
-        if ($this->checkKey("page", $params, self::PARAMS)) {
-            $query["page"] = $params["page"];
-        }
-        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
-            $query["pageSize"] = $params["pageSize"];
-        }
-        $query["scope"] = $uuid;
-        $url = $this->config["base"] . "/discover/search/objects?" . $uuid;
+        $url = $this->config["base"] . "/discover/browses/title/items";
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
         $item = $this->getRestApiResponse($url);
-        if ($this->checkKey("totalElements", $item["_embedded"]["searchResult"]["page"], self::DISCOVERY)) {
-            return $item["_embedded"]["searchResult"]["page"]["totalElements"];
+
+        if ($this->checkKey("page", $item, self::DISCOVERY)) {
+            return $item["page"]["totalElements"];
         }
         return "unknown";
     }
@@ -265,7 +326,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         $query = array (
             "page" => 0,
-            "pageSize" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"]
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -281,7 +342,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($communityCollections == self::REQUEST_FAILED) {
             return array();
         }
-        return $this->getCollections($communityCollections, $reverseOrder);
+        $pagination = $this->getPagination($communityCollections);
+        $collections = $this->getCollections($communityCollections, $reverseOrder);
+        $result = $this->dataObjects->getObjectsList();
+        $result->setPagination($pagination);
+        $result->setObjects($collections);
+        return $result->getData();
     }
 
     public function getItem(string $uuid, bool $formatDescription = false): array
@@ -340,13 +406,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $this->config["base"] . "/core/bitstreams/" . $uuid . "/content";
     }
 
-    private function getBitstreamData(string $uuid): array
+    public function getBitstreamData(string $uuid): array
     {
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid;
         $image = $this->getRestApiResponse($url);
         $model = $this->dataObjects->getBitstreamModel();
         if ($this->checkKey("dc.title", $image["metadata"], self::BITSTREAM)) {
-            $model->setTitle($image["metadata"]["dc.title"][0]["value"]);
+            $model->setName($image["metadata"]["dc.title"][0]["value"]);
         }
         if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
             $model->setLabel($image["metadata"]["iiif.label"][0]["value"]);
@@ -429,20 +495,24 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     private function getCollections(array $communityCollections, bool $reverseOrder = true): array
     {
         $collectionMap = array();
-        foreach ($communityCollections["_embedded"]["collections"] as $collection) {
-            $logoHref = $this->getCollectionLogo($collection["uuid"]);
-            $count = $this->getItemCount($collection["uuid"]);
-            $current = array(
-                "name" => $collection["name"],
-                "uuid" => $collection["uuid"],
-                "logo" => $logoHref,
-                "count" => $count
-            );
-            $collectionMap[] = $current;
+        if ($this->checkKey("_embedded", $communityCollections)) {
+            if ($this->checkKey("collections", $communityCollections["_embedded"])) {
+                foreach ($communityCollections["_embedded"]["collections"] as $collection) {
+                    $logoHref = $this->getCollectionLogo($collection["uuid"]);
+                    $current = array(
+                        "name" => $collection["name"],
+                        "uuid" => $collection["uuid"],
+                        "logo" => $logoHref
+                    );
+                    $collectionMap[] = $current;
+                }
+
+                if ($reverseOrder) {
+                    return array_reverse($collectionMap, false);
+                }
+            }
         }
-        if ($reverseOrder) {
-            return array_reverse($collectionMap, false);
-        }
+
         return $collectionMap;
     }
 
@@ -473,6 +543,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $imageArr = array();
         foreach ($bitstreams as $image) {
+            $model = $this->dataObjects->getBitstreamModel();
             $thumbnail = "";
             $mainImage = "";
             $mimeType = "";
@@ -486,15 +557,35 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                         $mimeType = $image["_embedded"]["format"]["mimetype"];
                     }
                 }
+
+                if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
+                    $model->setLabel($image["metadata"]["iiif.label"][0]["value"]);
+                }
+                if ($this->checkKey("dc.description", $image["metadata"], self::BITSTREAM)) {
+                    $model->setDescription($image["metadata"]["dc.description"][0]["value"]);
+                }
+                if ($this->checkKey("dc.format.medium", $image["metadata"], self::BITSTREAM)) {
+                    $model->setMedium($image["metadata"]["dc.format.medium"][0]["value"]);
+                }
+                if ($this->checkKey("dc.format.extent", $image["metadata"], self::BITSTREAM)) {
+                    $model->setDimensions($image["metadata"]["dc.format.extent"][0]["value"]);
+                }
+                if ($this->checkKey("dc.subject.other", $image["metadata"], self::BITSTREAM)) {
+                    $model->setSubject($image["metadata"]["dc.subject.other"][0]["value"]);
+                }
+                if ($this->checkKey("dc.type", $image["metadata"], self::BITSTREAM)) {
+                    $model->setType($image["metadata"]["dc.type"][0]["value"]);;
+                }
             }
-            $current = array (
-                "name" => $image["name"],
-                "href" => $mainImage,
-                "thumbnail" => $thumbnail,
-                "uuid" => $image["uuid"],
-                "mimetype" => $mimeType
-            );
-            $imageArr[] = $current;
+
+            $model->setName($image["name"]);
+            $model->setUuid($image["uuid"]);
+            $model->setHref($mainImage);
+            $model->setMimetype($mimeType);
+            $model->setThumbnail($thumbnail);
+            $model->setName($image["name"]);
+            $model->setName($image["name"]);
+            $imageArr[] = $model->getData();
         }
         return $imageArr;
     }
@@ -502,10 +593,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     /**
      * Takes as input the DSpace metadata for the image and returns the URL
      * for retrieving the image content (or default image if not found).
-     * @param $linkData array DSpace metadata for the image
+     * @param array|null $linkData array DSpace metadata for the image
      * @return string the content URL
      */
-    private function getImageUrl(array $linkData) : string
+    private function getImageUrl(?array $linkData) : string
     {
         if ($linkData) {
             if ($this->checkKey("_links", $linkData, self::BITSTREAM)) {
@@ -521,6 +612,31 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     }
 
     /**
+     * Gets the pagination attributes from a DSpace response. The associative arrays
+     * for next and previous pagination will be empty if the DSpace response doesn't
+     * include the pagination links.
+     * @param array $object
+     * @return array
+     */
+    private function getPagination(array $object): array {
+        $paginationModel = $this->dataObjects->getPaginationModel();
+        if ($this->checkKey("_links", $object, self::COMMUNITY)) {
+            if ($this->checkKey("next", $object["_links"], self::COMMUNITY)) {
+                $parts = parse_url($object["_links"]["next"]["href"]);
+                parse_str($parts['query'], $query);
+                $paginationModel->setNext($query['page'],$query['size']);
+            }
+            if ($this->checkKey("prev", $object["_links"], self::COMMUNITY)) {
+                $parts = parse_url($object["_links"]["prev"]["href"]);
+                parse_str($parts['query'], $query);
+                $paginationModel->setPrev($query['page'],$query['size']);
+            }
+        }
+        return $paginationModel->getData();
+    }
+
+
+    /**
      * Utility method for checking whether a key exists in an array.
      * @param $key string the key to look for
      * @param $array mixed the array that contains the key or null
@@ -533,7 +649,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $found = array_key_exists($key, $array);
             // Set debug to true in configuration to see missing metadata fields in the log.
             if (!$found && $this->config["debug"]) {
-                error_log("DEBUG: Could not find the key '" . $key . "' in the DSpace " . $type . " data.");
+                error_log("DEBUG: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
             }
             return $found;
         } else {
@@ -544,21 +660,36 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return false;
     }
 
+
     /**
-     * Utility method for DSpace API requests
+     * Utility method for DSpace API requests. Uses curl.
      * @param $url string the fully qualified URL
      * @return mixed the DSpace API response
      */
     private function getRestApiResponse(string $url): mixed
     {
         try {
+
             set_error_handler(
                 function ($err_severity, $err_msg, $err_file, $err_line)
                 { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },
                 E_WARNING
             );
-            $response = file_get_contents($url);
+
+            if ( ! function_exists( 'curl_init' ) ) {
+                die( 'The cURL library is not installed.' );
+            }
+
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            $response = curl_exec( $ch );
+            curl_close( $ch );
             restore_error_handler();
+            if ($this->config["debug"]) {
+                error_log("DEBUG: DSpace REST API response: " . $response);
+            }
+
         } catch (Exception $err) {
             error_log("ERROR: DSpace API request did not return data.");
             error_log($err);
@@ -568,6 +699,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             }
             return self::REQUEST_FAILED;
         }
+
         return json_decode($response, true);
     }
 
@@ -580,4 +712,5 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
 
     }
+
 }

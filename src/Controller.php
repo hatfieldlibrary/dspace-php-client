@@ -10,32 +10,48 @@ class Controller
     private const ENDPOINTS = array (
         array(
             "endpoint" => "endpoints",
-            "response" => "The list of endpoints",
+            "returns" => "objects array",
+            "content" => "The list of endpoints",
         ),
         array(
             "endpoint" => "sections/uuid",
-            "response" => "The section with the provided uuid",
+            "returns" => "object",
+            "content" => "The section with the provided uuid",
         ),
         array(
             "endpoint" => "sections/uuid/subsections",
-            "response" => "Subsections in the section with the provided uuid",
-            "optional parameters" =>
-            array(
-                array("name"=>"page",
-                    "value" => "the current page in pagination",
-                    "default" => "0",
-                    "optional"=> "true"
+            "returns" => array (
+                "pagination" => array (
+                    "next" => "associative array with page and pageSize",
+                    "prev" => "associative array with page and pageSize"
                 ),
-            array("name"=>"pageSize",
-                "value" => "the number of items per page",
-                "default" => "40",
-                "optional"=> "true"
-            )
-            )
+                "objects" => "object array"
+            ),
+            "content" => "Subsections in the section with the provided uuid and pagination",
+            "optional parameters" =>
+                array(
+                    array("name"=>"page",
+                        "value" => "the current page in pagination",
+                        "default" => "0",
+                        "optional"=> "true"
+                    ),
+                    array("name"=>"pageSize",
+                        "value" => "the number of items per page",
+                        "default" => "40",
+                        "optional"=> "true"
+                    )
+                )
         ),
         array(
             "endpoint" => "sections/uuid/collections",
-            "response" => "Collections in the section with the provided uuid",
+            "returns" => array (
+                "pagination" => array (
+                    "next" => "associative array with page and pageSize",
+                    "prev" => "associative array with page and pageSize"
+                ),
+                "objects" => "object array"
+            ),
+            "content" => "Collections in the section with the provided uuid and pagination",
             "optional parameters" =>
                 array(
                     array("name"=>"page",
@@ -52,11 +68,19 @@ class Controller
         ),
         array(
             "endpoint" => "collections/uuid",
-            "response" => "The collection with the provided uuid",
+            "returns" => "object",
+            "content" => "The collection with the provided uuid",
         ),
         array(
             "endpoint" => "collections/uuid/items",
-            "response" => "The items in the collection with the provided uuid",
+            "returns" => array (
+                "pagination" => array (
+                    "next" => "associative array with page and pageSize",
+                    "prev" => "associative array with page and pageSize"
+                ),
+                "objects" => "object array"
+            ),
+            "content" => "The items in the collection with the provided uuid and pagination",
             "optional parameters" =>
                 array(
                     array("name"=>"page",
@@ -73,7 +97,8 @@ class Controller
         ),
         array(
             "endpoint" => "items/uuid",
-            "response" => "The item with the provided uuid",
+            "returns" => "object",
+            "content" => "The item with the provided uuid",
             "optional parameters" =>
                 array(
                     array("name"=>"format",
@@ -85,7 +110,8 @@ class Controller
         ),
         array(
             "endpoint" => "items/uuid/files",
-            "response" => "The files for the item with the provided uuid",
+            "returns" => "objects array",
+            "content" => "The files for the item with the provided uuid",
             "optional parameters" =>
                 array(
                     array("name"=>"bundle",
@@ -97,19 +123,23 @@ class Controller
         ),
         array(
             "endpoint" => "items/uuid/thumbnail",
-            "response" => "The link to the logo image for the item with the provided uuid",
+            "returns" => "string",
+            "content" => "The link to the logo image for the item with the provided uuid",
         ),
         array(
             "endpoint" => "section/uuid/logo",
-            "response" => "The link to the logo image for the item with the provided uuid",
+            "returns" => "string",
+            "content" => "The link to the logo image for the item with the provided uuid",
         ),
         array(
             "endpoint" => "collection/uuid/logo",
-            "response" => "The link to the thumbnail image for the item with the provided uuid",
+            "returns" => "string",
+            "content" => "The link to the thumbnail image for the item with the provided uuid",
         ),
         array(
-            "endpoint" => "collection/uuid/count",
-            "response" => "The number of items in the collection with the provided uuid",
+            "endpoint" => "communities/uuid/collectionscount",
+            "returns" => "string",
+            "content" => "The number of items in the collection with the provided uuid",
         )
     );
 
@@ -252,12 +282,12 @@ class Controller
         }
     }
 
-    public function collectionscount($uuid): void
+    public function communitiescollectionscount($uuid): void
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $queryStringParams = $this->utils->getQueryStringParams();
         if ($requestMethod == 'GET') {
-            $response = $this->service->getCollectionCount($uuid, $queryStringParams);
+            $response = $this->service->getCommunityCollectionCount($uuid, $queryStringParams);
             $this->utils->outputJSON($response);
         } else {
             $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));

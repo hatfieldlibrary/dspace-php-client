@@ -90,11 +90,11 @@ interface DSpaceDataService {
     function getItemThumbnail(string $uuid): string;
 
     /**
-     * @param $uuid string the DSpace community uuid
+     * @param $communityUuid string the DSpace community uuid
      * @param $params array optional DSpace request parameters
      * @return string
      */
-    function getCollectionCount(string $uuid, array $params = []): string;
+    function getCommunityCollectionCount(string $communityUuid, array $params = []): string;
 
     /**
      * Extracts and returns collection information from an embedded DSpace API response element.
@@ -174,8 +174,10 @@ interface DSpaceDataService {
      * )
      * </code>
      */
-  //  function getBitstreamData(string $uuid): array;
+    function getBitstreamData(string $uuid): array;
 
     function getCommunity(string $uuid): array;
+
+    function getItemCount(string $uuid): string;
 
 }

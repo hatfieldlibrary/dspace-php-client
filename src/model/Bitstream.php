@@ -4,7 +4,11 @@ require_once __DIR__ . "/Model.php";
 
 class Bitstream implements Model {
 
-    private string $title = "";
+    private string $name = "";
+    private string $uuid = "";
+    private string $href = "";
+    private string $mimetype = "";
+    private string $thumbnail = "";
     private string $label = "";
     private string $medium = "";
     private string $dimensions = "";
@@ -12,9 +16,14 @@ class Bitstream implements Model {
     private string $description = "";
     private string $type = "";
 
-    public function setTitle(string $title): void
+    public function setName(string $name): void
     {
-        $this->title = $title;
+        $this->name = $name;
+    }
+
+    public function setUuid(string $uuid): void
+    {
+        $this->uuid = $uuid;
     }
 
     public function setLabel(string $label): void
@@ -47,30 +56,63 @@ class Bitstream implements Model {
         $this->type = $type;
     }
 
+    public function setMimetype(string $mimetype): void
+    {
+        $this->mimetype = $mimetype;
+    }
+
+    public function setHref(string $href): void
+    {
+        $this->href = $href;
+    }
+
+
+    public function setThumbnail(string $thumbnail): void
+    {
+        $this->thumbnail = $thumbnail;
+    }
+
     /**
      * @return array bitstream metadata
      * <code>
      * array (
-     *   "title" => string,
-     *   "label" => string,
-     *   "medium" => string,
-     *   "dimensions" => string,
-     *   "subject" => string,
-     *   "description" => string,
-     *   "type" => string
+     *   "name" => string,
+     *   "uuid" => string,
+     *   "mimetype" => string,
+     *   "href" => string,
+     *   "thumbnail" => string,
+     *    "metqdata" => array(
+     *      "title" => string,
+     *      "label" => string,
+     *      "medium" => string,
+     *      "dimensions" => string,
+     *      "subject" => string,
+     *      "description" => string,
+     *      "type" => string
+     *    )
      *  )
      * </code>
      */
     public function getData(): array
     {
         return array (
-            "title" => $this->title,
-            "label" => $this->label,
-            "medium" => $this->medium,
-            "dimensions" => $this->dimensions,
-            "subject" => $this->subject,
-            "description" => $this->description,
-            "type" => $this->type
+            "name" => $this->name,
+            "href" => $this->href,
+            "uuid" => $this->uuid,
+            "thumbnail" => $this->thumbnail,
+            "mimetype" =>$this->mimetype,
+            "metadata" => array(
+                "label" => $this->label,
+                "medium" => $this->medium,
+                "dimensions" => $this->dimensions,
+                "subject" => $this->subject,
+                "description" => $this->description,
+                "type" => $this->type
+            )
         );
     }
+
+
+
+
 }

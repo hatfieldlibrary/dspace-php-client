@@ -10,6 +10,8 @@ $controller = new Controller();
 
 $uri = $utils->getUriSegments();
 $response = "";
+
+
 if (count($uri) < 3) {
     error_log("ERROR: No method was provided in request.");
     $utils->outputJSON("404 Not Found. No method provided in request.", array('HTTP/1.1 404 Not Found.'));

@@ -8,6 +8,10 @@ class Community implements Model
     private $uuid = "";
     private $logo = "";
     private $count = 0;
+    private $next = "";
+    private $prev = "";
+
+
 
     public function __construct() {}
 
@@ -48,6 +52,26 @@ class Community implements Model
     }
 
     /**
+     * Sets the href of the next page of results
+     * @param string $next
+     * @return void
+     */
+    public function setNext(string $next): void
+    {
+        $this->next = $next;
+    }
+
+    /**
+     * Sets the href of the previous page of results
+     * @param string $prev
+     * @return void
+     */
+    public function setPrev(string $prev): void
+    {
+        $this->prev = $prev;
+    }
+
+    /**
      * Get subcommunity data.
      * @return array
      * <code>
@@ -55,7 +79,9 @@ class Community implements Model
      *     "name" => $this->name,
      *     "uuid" => $this->uuid,
      *     "logo" => $this->logo,
-     *     "count" => $this->count
+     *     "count" => $this->count,
+     *     "prev" => string,
+     *     "next" => string
      * )
      * </code>
      */
@@ -65,7 +91,11 @@ class Community implements Model
             "name" => $this->name,
             "uuid" => $this->uuid,
             "logo" => $this->logo,
-            "count" => $this->count
+            "count" => $this->count,
+            "prev" => $this->prev,
+            "next" => $this->next
         );
     }
+
+
 }

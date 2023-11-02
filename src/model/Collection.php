@@ -10,6 +10,8 @@ class Collection implements Model {
     private $shortDescription = "";
     private $logo = "";
     private $count = 0;
+    private $next = "";
+    private $prev = "";
 
     /**
      * Set the name of the community.
@@ -55,8 +57,29 @@ class Collection implements Model {
         $this->count = $count;
     }
 
+
     /**
-     * Get community data.
+     * Sets the href of the next page of results
+     * @param string $next
+     * @return void
+     */
+    public function setNext(string $next): void
+    {
+        $this->next = $next;
+    }
+
+    /**
+     * Sets the href of the previous page of results
+     * @param string $prev
+     * @return void
+     */
+    public function setPrev(string $prev): void
+    {
+        $this->prev = $prev;
+    }
+
+    /**
+     * Get collection data.
      * @return array
      * <code>
      *    array(
@@ -66,6 +89,8 @@ class Collection implements Model {
      *      "shortDescription" => string,
      *      "logo" => string,
      *      "count" => int
+     *      "prev" => string,
+     *      "next" => string
      * )
      * </code>
      */
@@ -77,7 +102,9 @@ class Collection implements Model {
             "description" => $this->description,
             "shortDescription" => $this->shortDescription,
             "logo" => $this->logo,
-            "count" => $this->count
+            "count" => $this->count,
+            "prev" => $this->prev,
+            "next" => $this->next
         );
     }
     
