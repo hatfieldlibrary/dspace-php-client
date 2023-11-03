@@ -12,6 +12,8 @@ Class Configuration {
              */
             "base"=>"http://localhost:8080/server/api",
             //"base"=>"https://digitalcollections.willamette.edu/server/api",
+
+            "scope" => "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
             /**
              * The maximum number of items returned in requests for DSpace objects (e.g. Items, Collections).
              * Currently this class does not support pagination.
@@ -29,7 +31,7 @@ Class Configuration {
              * When true DSpace API responses and parsing errors are written to the log file.
              * This is verbose. The value should be false when not actively debugging or developing.
              */
-            "debug" => true
+            "debug" => false
         );
     }
 

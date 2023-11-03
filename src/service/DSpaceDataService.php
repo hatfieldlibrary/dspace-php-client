@@ -3,6 +3,45 @@
 interface DSpaceDataService {
 
     /**
+     * Search for indexed DSpace objects (Items, Collections, Communities (sections))
+     * @param array $params required "query" parameter and optional DSpace parameters.
+     * @return array
+     * <code>
+     *    array(
+     *    "pagination" => array (
+     *     "next" => array (
+     *         "page" => string,
+     *         "pageSize" => string
+     *      ),
+     *      "prev" => array (
+     *         "page" => string,
+     *         "pageSize" => string
+     *       )
+     *    ),
+     *    "objects" => array (
+     *        "name" => string,
+     *        "uuid" => string,
+     *        "type" => string,
+     *        "metadata" => array (
+     *          "title" => string,
+     *          "creator" => string,
+     *          "description" => string,
+     *          "date" => string
+     *        )
+     *        "thumbnail" => array (
+     *          "name" => string,
+     *          "href" => string
+     *        )
+     *     )
+     *     "count" => string
+     *   )
+     * </code>
+     */
+    public function search(array $params = []): array;
+
+    function getTopLevelSections(array $params = []): array;
+
+    /**
      * Gets information about DSpace sub-communities.
      * @param $uuid string the parent community id.
      * @param $params array optional DSpace request parameters
@@ -16,7 +55,7 @@ interface DSpaceDataService {
      *     )
      * </code>
      */
-    function getSubCommunities(string $uuid, array $params = []): array;
+    function getSubSections(string $uuid, array $params = []): array;
 
     /**
      * Gets the name and href of the owning collection for an item.
@@ -176,7 +215,7 @@ interface DSpaceDataService {
      */
     function getBitstreamData(string $uuid): array;
 
-    function getCommunity(string $uuid): array;
+    function getSection(string $uuid): array;
 
     function getItemCount(string $uuid): string;
 

@@ -32,8 +32,4 @@ class ObjectsList implements Model {
             "count" => $this->count
         );
     }
-
-
-
-
 }

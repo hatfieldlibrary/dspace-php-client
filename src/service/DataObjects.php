@@ -6,6 +6,7 @@ require __DIR__ ."/../model/Item.php";
 require __DIR__ . "/../model/Bitstream.php";
 require __DIR__ . "/../model/Pagination.php";
 require __DIR__ . "/../model/ObjectsList.php";
+require __DIR__ . "/../model/SearchObject.php";
 
 class DataObjects {
 
@@ -33,5 +34,9 @@ class DataObjects {
 
     public function getObjectsList() : ObjectsList {
         return new ObjectsList();
+    }
+
+    public function getSearchObject() : SearchObject {
+        return new SearchObject();
     }
 }

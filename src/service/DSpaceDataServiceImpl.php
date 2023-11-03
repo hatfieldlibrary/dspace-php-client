@@ -18,6 +18,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     private DataObjects $dataObjects;
 
+    private string $defaultScope;
+
     private const ITEM = "ITEM";
     private const COMMUNITY = "COMMUNITY";
     private const COLLECTION = "COLLECTION";
@@ -34,9 +36,11 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $this->config = $settings->getConfig();
         $this->dataObjects = new DataObjects();
         $this->utils = new Utils();
+
+        $this->defaultScope = $this->config["scope"];
     }
 
-    public function getCommunity(string $uuid): array {
+    public function getSection(string $uuid): array {
         $this->checkUUID($uuid);
         $query = array (
             "embed" => "logo"
@@ -54,7 +58,56 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $model->getData();
     }
 
-    public function getSubCommunities(string $uuid, array $params = []): array
+    public function getTopLevelSections($params = []) : array {
+        $sectionsMap = array();
+        $query = array (
+            "page" => 0,
+            "size" => $this->config["defaultPageSize"],
+            "embed" => "logo,subcommunities/logo",
+            "sort" => "dc.title,ASC"
+        );
+        if ($this->checkKey("page", $params, self::PARAMS)) {
+            $query["page"] = $params["page"];
+        }
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
+            $query["pageSize"] = $params["pageSize"];
+        }
+        $url = $this->config["base"] . "/core/communities/search/top";
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
+        $sections = $this->getRestApiResponse($url);
+        $result = $this->dataObjects->getObjectsList();
+        $model = $this->dataObjects->getCommunityModel();
+        if ($this->checkKey("communities", $sections["_embedded"], self::COMMUNITY)) {
+            foreach ($sections["_embedded"]["communities"] as $section) {
+                $model->setName($section["name"]);
+                $model->setUUID($section["uuid"]);
+                $model->setLogo($this->getLogoFromResponse($section));
+                if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
+                    if ($this->checkKey("subcommunities", $section["_embedded"], self::COMMUNITY)) {
+                        if ($this->checkKey("_embedded", $section["_embedded"]["subcommunities"], self::COMMUNITY)) {
+                            if ($this->checkKey("subcommunities", $section["_embedded"]["subcommunities"]["_embedded"], self::COMMUNITY)) {
+                                $model->setSubsectionCount(count($section["_embedded"]["subcommunities"]["_embedded"]["subcommunities"]));
+                            }
+                        }
+                    }
+                }
+                $sectionsMap[$section["name"]] = $model->getData();
+            }
+            if ($this->checkKey("page", $sections)) {
+                if ($this->checkKey("totalElements", $sections["page"])) {
+                    $result->setCount($sections["page"]["totalElements"]);
+                }
+            }
+            $pagination = $this->getPagination($sections);
+            $result->setPagination($pagination);
+            $result->setObjects($sectionsMap);
+        }
+        return $result->getData();
+    }
+
+    public function getSubSections(string $uuid, array $params = []): array
     {
         $this->checkUUID($uuid);
         $subcommitteeMap = array();
@@ -201,7 +254,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                                         self::ITEM)) {
                                         if (
                                             $this->checkKey('href', $object["_embedded"]["thumbnail"]["_links"]["content"],
-                                            self::ITEM)) {
+                                                self::ITEM)) {
                                             $model->setLogo($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
                                         }
                                     }
@@ -411,34 +464,140 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function getBitstreamData(string $uuid): array
     {
+        $query = array (
+            "embed" => "bitstreams/format"
+        );
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid;
-        $image = $this->getRestApiResponse($url);
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
+        $thumbnail = "";
+        $mainImage = "";
+        $file = $this->getRestApiResponse($url);
         $model = $this->dataObjects->getBitstreamModel();
-        if ($this->checkKey("dc.title", $image["metadata"], self::BITSTREAM)) {
-            $model->setName($image["metadata"]["dc.title"][0]["value"]);
+        if ($this->checkKey("self", $file["_links"], self::BITSTREAM)) {
+            $thumbnail = $this->getThumbnail($file["_links"]["self"]["href"]);
+            $mainImage = $file["_links"]["content"]["href"];
         }
-        if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
-            $model->setLabel($image["metadata"]["iiif.label"][0]["value"]);
+        if ($this->checkKey("dc.title", $file["metadata"], self::BITSTREAM)) {
+            $model->setName($file["metadata"]["dc.title"][0]["value"]);
         }
-        if ($this->checkKey("dc.description", $image["metadata"], self::BITSTREAM)) {
-            $model->setDescription($image["metadata"]["dc.description"][0]["value"]);
+        if ($this->checkKey("iiif.label", $file["metadata"], self::BITSTREAM)) {
+            $model->setLabel($file["metadata"]["iiif.label"][0]["value"]);
         }
-        if ($this->checkKey("dc.format.medium", $image["metadata"], self::BITSTREAM)) {
-            $model->setMedium($image["metadata"]["dc.format.medium"][0]["value"]);
+        if ($this->checkKey("dc.description", $file["metadata"], self::BITSTREAM)) {
+            $model->setDescription($file["metadata"]["dc.description"][0]["value"]);
         }
-        if ($this->checkKey("dc.format.extent", $image["metadata"], self::BITSTREAM)) {
-            $model->setDimensions($image["metadata"]["dc.format.extent"][0]["value"]);
+        if ($this->checkKey("dc.format.medium", $file["metadata"], self::BITSTREAM)) {
+            $model->setMedium($file["metadata"]["dc.format.medium"][0]["value"]);
         }
-        if ($this->checkKey("dc.subject.other", $image["metadata"], self::BITSTREAM)) {
-            $model->setSubject($image["metadata"]["dc.subject.other"][0]["value"]);
+        if ($this->checkKey("dc.format.extent", $file["metadata"], self::BITSTREAM)) {
+            $model->setDimensions($file["metadata"]["dc.format.extent"][0]["value"]);
         }
-        if ($this->checkKey("dc.type", $image["metadata"], self::BITSTREAM)) {
-            $model->setType($image["metadata"]["dc.type"][0]["value"]);;
+        if ($this->checkKey("dc.subject.other", $file["metadata"], self::BITSTREAM)) {
+            $model->setSubject($file["metadata"]["dc.subject.other"][0]["value"]);
         }
-
+        if ($this->checkKey("dc.type", $file["metadata"], self::BITSTREAM)) {
+            $model->setType($file["metadata"]["dc.type"][0]["value"]);;
+        }
+        $model->setUuid($file["uuid"]);
+        $model->setHref($mainImage);
+        $model->setMimetype($this->getBitstreamFormat($uuid));
+        $model->setThumbnail($thumbnail);
         return $model->getData();
     }
 
+    public function search(array $params = []): array
+    {
+        $query = array (
+            "scope" => $this->config["scope"],
+            "page" => "0",
+            "size" => $this->config["defaultPageSize"],
+            "embed" => "thumbnail,item/thumbnail"
+        );
+        if ($this->checkKey("page", $params, self::PARAMS)) {
+            $query["page"] = $params["page"];
+        }
+        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
+            $query["pageSize"] = $params["pageSize"];
+        }
+        if ($this->checkKey("scope", $params, self::PARAMS)) {
+            $query["scope"] = $params["scope"];
+        }
+        if ($this->checkKey("query", $params, self::PARAMS)) {
+            $query["query"] = $params["query"];
+        }
+        $url = $this->config["base"] . "/discover/search/objects";
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
+        $response = $this->getRestApiResponse($url);
+        $result = $this->dataObjects->getObjectsList();
+        $objects = array();
+        if ($this->checkKey("_embedded", $response, self::DISCOVERY)) {
+            if ($this->checkKey("searchResult", $response["_embedded"], self::DISCOVERY)) {
+                $result->setCount($response["_embedded"]["searchResult"]["page"]["totalElements"]);
+                $result->setPagination($this->getPagination($response["_embedded"]["searchResult"]));
+                if ($this->checkKey("_embedded", $response["_embedded"]["searchResult"], self::DISCOVERY)) {
+                    if ($this->checkKey("objects", $response["_embedded"]["searchResult"]["_embedded"], self::DISCOVERY)) {
+                        $respObjects = $response["_embedded"]["searchResult"]["_embedded"]["objects"];
+                        foreach ($respObjects as $obj) {
+                            $object = $this->getSearchResultObj($obj["_embedded"]["indexableObject"]);
+                            $objects[] = $object;
+                        }
+                    }
+                }
+            }
+        }
+        $result->setObjects($objects);
+        return $result->getData();
+    }
+
+    private function getSearchResultObj($data): array
+    {
+        $object = $this->dataObjects->getSearchObject();
+        if ($this->checkKey("name", $data, self::DISCOVERY)) {
+            $object->setName($data["name"]);
+        }
+        if ($this->checkKey("uuid", $data, self::DISCOVERY)) {
+            $object->setUuid($data["uuid"]);
+        }
+        if ($this->checkKey("type", $data, self::DISCOVERY)) {
+            $object->setType($data["type"]);
+        }
+
+        if ($this->checkKey("metadata", $data, self::DISCOVERY)) {
+            if ($this->checkKey("dc.title", $data["metadata"], self::DISCOVERY)) {
+                $object->setTitle($data["metadata"]["dc.title"][0]["value"]);
+            }
+            if ($this->checkKey("dc.description.abstract", $data["metadata"], self::DISCOVERY)) {
+
+                $object->setDescription($data["metadata"]["dc.description.abstract"][0]["value"]);
+            }
+            if ($this->checkKey("dc.date.issued", $data["metadata"], self::DISCOVERY)) {
+                $object->setDate($data["metadata"]["dc.date.issued"][0]["value"]);
+            }
+            if ($this->checkKey("dc.contributor.author", $data["metadata"], self::DISCOVERY)) {
+                $object->setCreator($data["metadata"]["dc.contributor.author"][0]["value"]);
+            }
+        }
+        if ($this->checkKey("thumbnail", $data, self::DISCOVERY)) {
+            if ($this->checkKey("name", $data["thumbnail"], self::DISCOVERY)) {
+                $object->setThumbnailName($data["thumbnail"]["name"]);
+            }
+            if ($this->checkKey("href", $data["thumbnail"], self::DISCOVERY)) {
+                $object->setThumbnailHref($data["thumbnail"]["href"]);
+            }
+        }
+        return $object->getData();
+    }
+
+    private function getBitstreamFormat($uuid) {
+        $url = $this->config["base"] . "/core/bitstreams/" . $uuid . "/format";
+        $format = $this->getRestApiResponse($url);
+        return $format["mimetype"];
+
+    }
     private function getThumbnail(string $href): string
     {
         $images = $this->getRestApiResponse($href);
@@ -586,8 +745,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $model->setHref($mainImage);
             $model->setMimetype($mimeType);
             $model->setThumbnail($thumbnail);
-            $model->setName($image["name"]);
-            $model->setName($image["name"]);
             $imageArr[] = $model->getData();
         }
         return $imageArr;
@@ -635,6 +792,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $paginationModel->setPrev($query['page'],$query['size']);
             }
         }
+
         return $paginationModel->getData();
     }
 
@@ -650,14 +808,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         if(!is_null($array)) {
             $found = array_key_exists($key, $array);
-            // Set debug to true in configuration to see missing metadata fields in the log.
             if (!$found && $this->config["debug"]) {
-                error_log("DEBUG: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
+                error_log("WARNING: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
             }
             return $found;
         } else {
-                // NOTE: It might be a good idea to throw an exception here.
-                error_log("WARNING: A null array was provided to the checkKey function. This should not
+            // NOTE: It might be a good idea to throw an exception here.
+            error_log("ERROR: A null array was provided to the checkKey function. This should not
                 happen. There was likely a problem parsing the Dspace API response.");
         }
         return false;
@@ -682,7 +839,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             if ( ! function_exists( 'curl_init' ) ) {
                 die( 'The cURL library is not installed.' );
             }
-
             $ch = curl_init();
             curl_setopt( $ch, CURLOPT_URL, $url );
             curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
