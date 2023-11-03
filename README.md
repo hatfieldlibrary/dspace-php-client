@@ -1,5 +1,5 @@
-# dspace-php-client
-PHP client for read-only DSpace API information.
+# DSpace PHP REST
+PHP REST API and client for read-only DSpace API information.
 
 The client provides functions for DSpace API queries to retrieve Community, Collection, Item and Bitstream information.
 
