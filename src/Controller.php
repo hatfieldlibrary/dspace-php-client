@@ -157,7 +157,6 @@ class Controller
     public function sections($uuid): void
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
-        $queryStringParams = $this->utils->getQueryStringParams();
         if ($requestMethod == 'GET') {
             $response = $this->service->getCommunity($uuid);
             $this->utils->outputJSON($response);

@@ -4,13 +4,10 @@ require_once __DIR__ . "/Model.php";
 
 class Community implements Model
 {
-    private $name = "";
-    private $uuid = "";
-    private $logo = "";
-    private $count = 0;
-    private $next = "";
-    private $prev = "";
-
+    private string $name = "";
+    private string $uuid = "";
+    private string $logo = "";
+    private string $subsectionCount = "undefined";
 
 
     public function __construct() {}
@@ -20,7 +17,8 @@ class Community implements Model
      * @param $name
      * @return void
      */
-    public function setName($name) {
+    public function setName($name): void
+    {
         $this->name = $name;
     }
 
@@ -29,7 +27,8 @@ class Community implements Model
      * @param $uuid
      * @return void
      */
-    public function setUUID($uuid) {
+    public function setUUID($uuid): void
+    {
         $this->uuid = $uuid;
     }
 
@@ -38,37 +37,19 @@ class Community implements Model
      * @param $href
      * @return void
      */
-    public function setLogo($href) {
+    public function setLogo($href): void
+    {
         $this->logo = $href;
     }
 
     /**
      * Set the number of collections in the subcommunity.
-     * @param $count
+     * @param $subsectionCount
      * @return void
      */
-    public function setCount($count) {
-        $this->count = $count;
-    }
-
-    /**
-     * Sets the href of the next page of results
-     * @param string $next
-     * @return void
-     */
-    public function setNext(string $next): void
+    public function setSubsectionCount($subsectionCount): void
     {
-        $this->next = $next;
-    }
-
-    /**
-     * Sets the href of the previous page of results
-     * @param string $prev
-     * @return void
-     */
-    public function setPrev(string $prev): void
-    {
-        $this->prev = $prev;
+        $this->subsectionCount = $subsectionCount;
     }
 
     /**
@@ -80,8 +61,6 @@ class Community implements Model
      *     "uuid" => $this->uuid,
      *     "logo" => $this->logo,
      *     "count" => $this->count,
-     *     "prev" => string,
-     *     "next" => string
      * )
      * </code>
      */
@@ -91,9 +70,7 @@ class Community implements Model
             "name" => $this->name,
             "uuid" => $this->uuid,
             "logo" => $this->logo,
-            "count" => $this->count,
-            "prev" => $this->prev,
-            "next" => $this->next
+            "subSectionCount" => $this->subsectionCount
         );
     }
 

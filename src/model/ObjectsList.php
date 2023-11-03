@@ -7,6 +7,8 @@ class ObjectsList implements Model {
     private array $pagination = array();
     private array $objects = array();
 
+    private string $count = "0";
+
     public function setPagination(array $pagination): void
     {
         $this->pagination = $pagination;
@@ -17,13 +19,21 @@ class ObjectsList implements Model {
         $this->objects = $objects;
     }
 
+    public function setCount(string $count): void
+    {
+        $this->count = $count;
+    }
+
     function getData(): array
     {
         return array (
             "pagination" => $this->pagination,
-            "objects" => $this->objects
+            "objects" => $this->objects,
+            "count" => $this->count
         );
     }
+
+
 
 
 }

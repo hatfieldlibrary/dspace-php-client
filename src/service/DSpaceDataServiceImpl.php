@@ -48,11 +48,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model = $this->dataObjects->getCommunityModel();
         $community = $this->getRestApiResponse($url);
         $logoHref = $this->getCommunityLogo($community["uuid"]);
-        $count = $this->getCommunityCollectionCount($community["uuid"]);
         $model->setName($community["name"]);
         $model->setUUID($community["uuid"]);
         $model->setLogo($logoHref);
-        $model->setCount($count);
         return $model->getData();
     }
 
@@ -77,9 +75,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $result = $this->dataObjects->getObjectsList();
         $model = $this->dataObjects->getCommunityModel();
-        $SubCommunities = $this->getRestApiResponse($url);
-        if ($this->checkKey("subcommunities", $SubCommunities["_embedded"], self::COMMUNITY)) {
-            foreach ($SubCommunities["_embedded"]["subcommunities"] as $subComm) {
+        $subCommunities = $this->getRestApiResponse($url);
+        if ($this->checkKey("subcommunities", $subCommunities["_embedded"], self::COMMUNITY)) {
+            foreach ($subCommunities["_embedded"]["subcommunities"] as $subComm) {
                 $model->setName($subComm["name"]);
                 $model->setUUID($subComm["uuid"]);
                 $model->setLogo($this->getLogoFromResponse($subComm));
@@ -87,15 +85,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                     if ($this->checkKey("collections", $subComm["_embedded"], self::COMMUNITY)) {
                         if ($this->checkKey("_embedded", $subComm["_embedded"]["collections"], self::COMMUNITY)) {
                             if ($this->checkKey("collections", $subComm["_embedded"]["collections"]["_embedded"], self::COMMUNITY)) {
-                                $model->setCount(count($subComm["_embedded"]["collections"]["_embedded"]["collections"]));
+                                $model->setSubsectionCount(count($subComm["_embedded"]["collections"]["_embedded"]["collections"]));
                             }
                         }
                     }
                 }
-
                 $subcommitteeMap[$subComm["name"]] = $model->getData();
             }
-            $pagination = $this->getPagination($SubCommunities["_embedded"]);
+            $pagination = $this->getPagination($subCommunities);
+
             $result->setPagination($pagination);
             $result->setObjects($subcommitteeMap);
         }
@@ -345,6 +343,11 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $pagination = $this->getPagination($communityCollections);
         $collections = $this->getCollections($communityCollections, $reverseOrder);
         $result = $this->dataObjects->getObjectsList();
+        if ($this->checkKey("page", $communityCollections)) {
+            if ($this->checkKey("totalElements", $communityCollections["page"])) {
+                $result->setCount($communityCollections["page"]["totalElements"]);
+            }
+        }
         $result->setPagination($pagination);
         $result->setObjects($collections);
         return $result->getData();
