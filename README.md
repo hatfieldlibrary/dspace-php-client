@@ -52,6 +52,13 @@ __/api/sections/<:uuid>__
 
 Gets information about a specific community (section).
 
+__Parameters:__
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the community (section)
+
 The JSON response:
 
 ```
@@ -68,6 +75,22 @@ __/api/sections/<:uuid>/subsections__
 
 Gets information about subsections within this section.
 
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the community (section)
+
+**page:** page<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page in pagination (default = 0)
+
+**page:** size<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page size used in pagination (default defined in Configuration).
 The JSON response:
 
 ```
