@@ -243,7 +243,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                                         if (
                                             $this->checkKey('href', $object["_embedded"]["thumbnail"]["_links"]["content"],
                                                 self::ITEM)) {
-                                            $model->setLogo($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
+                                            $model->setThumbnail($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
                                         }
                                     }
                                 }
@@ -555,15 +555,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     }
 
     // unused
-    private function getItemCountForCollection($collection): string
-    {
-        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
-            if ($this->checkKey("page", $collection["items"])) {
-                return $collection["items"]["page"]["totalElements"];
-            }
-        }
-        return "0";
-    }
+//    private function getItemCountForCollection($collection): string
+//    {
+//        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
+//            if ($this->checkKey("page", $collection["items"])) {
+//                return $collection["items"]["page"]["totalElements"];
+//
+//        }
+//        return "0";
+//    }
 
     private function getSubSectionCountForSection($section): string
     {
