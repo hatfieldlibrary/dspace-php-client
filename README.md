@@ -294,7 +294,8 @@ Sample JSON Response:
 
 ```json
 
-{"name":"Sample Item",
+{
+  "name":"Sample Item",
   "uuid":"b30f3383-8653-4114-abaa-b642a6e535a1",
   "creator":"John Doe",
   "date":"2023",
