@@ -295,38 +295,37 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $this->getImageUrl($logoMetadata);
     }
 
-    public function getCommunityCollectionCount(string $communityUuid, array $params = []): string
-    {
-        $query = array (
-            "page" => 0,
-            "size" => $this->config["defaultPageSize"]
-        );
-        if ($this->checkKey("page", $params, self::PARAMS)) {
-            $query["page"] = $params["page"];
-        }
-        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
-            $query["pageSize"] = $params["pageSize"];
-        }
-        $url = $this->config["base"] . "/core/communities/" . $communityUuid . "/collections";
-        if (!empty($query)) {
-            $url .= '?' . http_build_query($query);
-        }
-        $count = $this->getRestApiResponse($url);
-        if ($count == self::REQUEST_FAILED) {
-            return $count;
-        }
-        return $count["page"]["totalElements"];
-    }
+//    public function getCommunityCollectionCount(string $communityUuid, array $params = []): string
+//    {
+//        $query = array (
+//            "page" => 0,
+//            "size" => $this->config["defaultPageSize"]
+//        );
+//        if ($this->checkKey("page", $params, self::PARAMS)) {
+//            $query["page"] = $params["page"];
+//        }
+//        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
+//            $query["pageSize"] = $params["pageSize"];
+//        }
+//        $url = $this->config["base"] . "/core/communities/" . $communityUuid . "/collections";
+//        if (!empty($query)) {
+//            $url .= '?' . http_build_query($query);
+//        }
+//        $count = $this->getRestApiResponse($url);
+//        if ($count == self::REQUEST_FAILED) {
+//            return $count;
+//        }
+//        return $count["page"]["totalElements"];
+//    }
 
     /**
      * DSpace currently does not return the item count with the collection responses.
      * This method makes a title browse request for the collection and returns the
      * number of items. It is not efficient and can be slow.
      * @param string $uuid
-     * @param array $params
      * @return string
      */
-    public function getItemCount(string $uuid): string
+    private function getItemCount(string $uuid): string
     {
         $query = array (
             "page" => 0,
@@ -381,7 +380,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function getItem(string $uuid, bool $formatDescription = false): array
     {
+        $query = array (
+            "embed" => "thumbnail"
+        );
         $url = $this->config["base"] . "/core/items/" . $uuid;
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
         $item = $this->getRestApiResponse($url);
         $model = $this->dataObjects->getItemModel();
         $metadata = $item["metadata"];
@@ -389,6 +394,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model->setUUID($item["uuid"]);
         if ($this->checkKey("dc.contributor.author", $metadata, self::ITEM)) {
             $model->setAuthor($metadata["dc.contributor.author"][0]["value"]);
+        }
+        if ($this->checkKey("dc.date.issued", $metadata, self::ITEM)) {
+            $model->setDate($metadata["dc.date.issued"][0]["value"]);
         }
         if ($this->checkKey("dc.description.abstract", $metadata, self::ITEM)) {
             $desc = $metadata["dc.description.abstract"][0]["value"];
@@ -399,6 +407,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         if ($this->checkKey("owningCollection", $item["_links"], self::ITEM)) {
             $model->setOwningCollection($item["_links"]["owningCollection"]["href"]);
+        }
+        if ($this->checkKey("thumbnail", $item["_embedded"], self::ITEM)) {
+            $thumb = $this->getFileLink($item["_embedded"]["thumbnail"]["uuid"]);
+            $model->setThumbnail($thumb);
         }
         return $model->getData();
     }
@@ -418,7 +430,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $bundle = $this->getBundle($bundles, $bundleName);
         if (count($bundle) > 0) {
             try {
-                return $this->getBitstreams($bundle);
+                $result = $this->getBitstreams($bundle);
+                return $result->getData();
             } catch (Exception $err) {
                 error_log($err, 0);
                 return array();
@@ -427,7 +440,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             error_log("ERROR: The requested bundle was not found: " . $bundleName);
             return array();
         }
-
     }
 
     public function getBitstreamData(string $uuid): array
@@ -742,10 +754,14 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      *  </code>
      * @throws Exception (see log file)
      */
-    private function getBitstreams(array $bundle): array
+    private function getBitstreams(array $bundle): ObjectsList
     {
+        $result = $this->dataObjects->getObjectsList();
         $bitstreams = array();
         if ($this->checkKey("bitstreams", $bundle["_embedded"], self::BUNDLE)) {
+            if ($this->checkKey("page", $bundle["_embedded"]["bitstreams"], self::BUNDLE)) {
+                $result->setCount($bundle["_embedded"]["bitstreams"]["page"]["totalElements"]);
+            }
             if ($this->checkKey("_embedded", $bundle["_embedded"]["bitstreams"], self::BUNDLE)) {
                 if ($this->checkKey("bitstreams", $bundle["_embedded"]["bitstreams"]["_embedded"],
                     self::BUNDLE)) {
@@ -769,7 +785,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                         $mimeType = $image["_embedded"]["format"]["mimetype"];
                     }
                 }
-
+                if ($this->checkKey("dc.title", $image["metadata"], self::BITSTREAM)) {
+                    $model->setTitle($image["metadata"]["dc.title"][0]["value"]);
+                }
                 if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
                     $model->setLabel($image["metadata"]["iiif.label"][0]["value"]);
                 }
@@ -797,7 +815,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $model->setThumbnail($thumbnail);
             $imageArr[] = $model->getData();
         }
-        return $imageArr;
+        $result->setObjects($imageArr);
+        return $result;
     }
 
     /**

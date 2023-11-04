@@ -9,7 +9,7 @@ class Item implements Model {
     private string $date = "";
     private string $description = "";
     private string $owningCollection = "";
-    private string $logo = "";
+    private string $thumbnail = "";
 
     private array $bitstreams = array();
 
@@ -39,9 +39,9 @@ class Item implements Model {
         $this->owningCollection = $owningCollection;
     }
 
-    public function setLogo(string $logo): void
+    public function setThumbnail(string $thumbnail): void
     {
-        $this->logo = $logo;
+        $this->thumbnail = $thumbnail;
     }
 
     public function setAuthor(string $author): void
@@ -53,6 +53,7 @@ class Item implements Model {
     {
         $this->bitstreams = $bitstreams;
     }
+
 
     /**
      * @return array item metadata
@@ -76,14 +77,16 @@ class Item implements Model {
      */
     public function getData(): array
     {
-        return array("name" => $this->name,
+        return array(
+            "name" => $this->name,
             "uuid" => $this->uuid,
             "creator" => $this->creator,
             "date" => $this->date,
             "description" => $this->description,
             "owningCollection" => $this->owningCollection,
-            "logo" => $this->logo
+            "thumbnail" => $this->thumbnail
         );
     }
+
 
 }

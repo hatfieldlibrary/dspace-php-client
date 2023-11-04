@@ -9,6 +9,7 @@ class Bitstream implements Model {
     private string $href = "";
     private string $mimetype = "";
     private string $thumbnail = "";
+    private string $title = "";
     private string $label = "";
     private string $medium = "";
     private string $dimensions = "";
@@ -72,6 +73,11 @@ class Bitstream implements Model {
         $this->thumbnail = $thumbnail;
     }
 
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
     /**
      * @return array bitstream metadata
      * <code>
@@ -102,6 +108,7 @@ class Bitstream implements Model {
             "thumbnail" => $this->thumbnail,
             "mimetype" =>$this->mimetype,
             "metadata" => array(
+                "title" => $this->title,
                 "label" => $this->label,
                 "medium" => $this->medium,
                 "dimensions" => $this->dimensions,
@@ -111,7 +118,6 @@ class Bitstream implements Model {
             )
         );
     }
-
 
 
 

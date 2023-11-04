@@ -133,7 +133,7 @@ interface DSpaceDataService {
      * @param $params array optional DSpace request parameters
      * @return string
      */
-    function getCommunityCollectionCount(string $communityUuid, array $params = []): string;
+   // function getCommunityCollectionCount(string $communityUuid, array $params = []): string;
 
     /**
      * Extracts and returns collection information from an embedded DSpace API response element.
@@ -216,7 +216,5 @@ interface DSpaceDataService {
     function getBitstreamData(string $uuid): array;
 
     function getSection(string $uuid): array;
-
-    function getItemCount(string $uuid): string;
 
 }

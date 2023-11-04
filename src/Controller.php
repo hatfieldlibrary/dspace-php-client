@@ -155,17 +155,17 @@ class Controller
         }
     }
 
-    public function communitiescollectionscount($uuid): void
-    {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        $queryStringParams = $this->utils->getQueryStringParams();
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getCommunityCollectionCount($uuid, $queryStringParams);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
+//    public function communitiescollectionscount($uuid): void
+//    {
+//        $requestMethod = $_SERVER["REQUEST_METHOD"];
+//        $queryStringParams = $this->utils->getQueryStringParams();
+//        if ($requestMethod == 'GET') {
+//            $response = $this->service->getCommunityCollectionCount($uuid, $queryStringParams);
+//            $this->utils->outputJSON($response);
+//        } else {
+//            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
+//        }
+//    }
 
     public function sectionscollections($uuid): void
     {
