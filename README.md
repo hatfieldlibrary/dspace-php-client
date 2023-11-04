@@ -378,3 +378,76 @@ Sample JSON response:
 }
 
 ```
+
+___
+
+## /api/search
+
+Search for items, collections and sections.
+
+## Parameters
+
+**name:** query<br>
+**in:** query<br>
+**required:** true<br>
+**description:** The query term
+
+**name:** scope<br>
+**in:** query<br>
+**required:** true<br>
+**description:** The query scope (collection or section uuid)
+
+**name:** page<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page in pagination (default = 0)
+
+**name:** size<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page size used for pagination (default defined in Configuration).
+
+Sample JSON response:
+
+```json
+{
+  "pagination": {
+    "next": [ ],
+    "prev": [ ]
+  },
+  "objects": [
+    {
+      "name": "Jane's Thesis Spring 2023",
+      "uuid": "ae44806f-b854-4de9-8113-100494d81997",
+      "type": "item",
+      "metadata": {
+       "title": "My Thesis",
+       "creator": "Jane Doe",
+       "description": "Description of my thesis.",
+       "date": "2023"
+      },
+      "thumbnail": {
+        "name": "jane-1.jpeg.jpg",
+        "href": "http://localhost:8080/server/api/core/bitstreams/ecd9b20c-86d7-4a6a-b0bf-306cae8d3049/content"
+      }
+    },
+    {
+      "name": "Thesis",
+      "uuid": "35eaa237-3e86-40a2-9973-de61914ac080",
+      "type": "community",
+      "metadata": {
+        "title": "Thesis",
+        "creator": "",
+        "description": "Description of the Thesis collection.",
+        "date": ""
+      },
+      "thumbnail": {
+        "name": "",
+        "href": ""
+      }
+    }
+  ],
+  "count": "2"
+}
+
+```
