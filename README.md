@@ -13,7 +13,7 @@ information needed to create a fully-featured DSpace user interface.
 
 List of endpoints.
 
-
+___
 
 ## /api/topevel
 
@@ -48,7 +48,7 @@ Sample JSON response:
 }
 ```
 
-
+___
 
 ## /api/sections/<:uuid>
 
@@ -72,6 +72,7 @@ count: "undefined"
 }
 ```
 
+___
 
 
 ## /api/sections/<:uuid>/subsections
@@ -124,6 +125,7 @@ Sample JSON response:
 }
 ```
 
+___
 
 
 ## /api/sections/<:uuid>/collections
@@ -173,6 +175,9 @@ Sample JSON response:
   count: "4"
 }
 ```
+
+___
+
 ## /api/collections/<:uuid>
 
 Information about a specific DSpace collection. Includes count of the 
