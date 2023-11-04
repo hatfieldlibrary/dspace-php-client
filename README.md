@@ -15,7 +15,7 @@ List of endpoints.
 
 ___
 
-## /api/topevel
+## /api/toplevel
 
 Gets information about the top-level communities (sections)
 
@@ -340,6 +340,40 @@ Sample JSON response:
       } 
     }], 
   "count": "1"
+}
+
+```
+___
+
+## /api/files/<:uuid>
+
+Information about the file with the provided DSpace uuid.
+
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the file.
+
+Sample JSON response:
+
+```json
+{
+  "name":"roger-10.jpeg",
+  "href":"http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/a6c0a357-8901-45fd-9a3d-4616233106f8\/content",
+  "uuid":"a6c0a357-8901-45fd-9a3d-4616233106f8",
+  "thumbnail":"http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/a6c0a357-8901-45fd-9a3d-4616233106f8\/content",
+  "mimetype":"image\/jpeg",
+  "metadata": {
+    "title":"roger-10.jpeg",
+    "label":"The View",
+    "medium":"Digital",
+    "dimensions":"13\" x 17\"",
+    "subject":"cosmology",
+    "description":"Photo of universe",
+    "type":"Illustration"
+  }
 }
 
 ```
