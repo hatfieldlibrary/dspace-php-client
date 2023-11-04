@@ -159,25 +159,28 @@ Sample JSON response:
 ```
 {
   pagination: {
-    next: {
-      page: "1",
-      pageSize: "2"
-    },
-    prev: {}
+    next: [ ],
+    prev: [ ]
   },
   objects: [
     {
       name: "Collection One",
-      uuid: "1eb8d02b-3cf7-459c-a37f-dc2122a75a1f",
-      logo: "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content"
+      uuid: "0b6eba01-5bef-440f-a950-b29dd37db50",
+      description: "Collection One full description.",
+      shortDescription: "Collection One short description",
+      logo: "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
+      itemCount: "3"
     },
     {
       name: "Collection Two",
       uuid: "1eb8d02b-3cf7-459c-a37f-dc2122a75a1f",
-      logo: "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content"
+      description: "Collection One full description..",
+      shortDescription: "Collection One brief description.",
+      logo: "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content", 
+      itemCount: "0"
     }
   ],
-  count: "4"
+  count: "2"
 }
 ```
 
