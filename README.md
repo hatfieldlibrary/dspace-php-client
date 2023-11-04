@@ -7,7 +7,7 @@ The client returns only "essential" information about DSpace objects. The goal i
 constructing websites that incorporate information from the DSpace repository, omitting the more extensive 
 information needed to create a fully-featured DSpace user interface. 
 
-## Endpoints
+# Endpoints
 
 ## /api/endpoints
 
