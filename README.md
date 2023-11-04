@@ -21,7 +21,7 @@ Gets information about the top-level communities (sections)
 
 Sample JSON response:
 
-```agsl
+```json
 {
   pagination: {
     next: [
@@ -67,11 +67,11 @@ Sample JSON response:
 
 ```json
 {
-   name: "Section Name",
-   uuid: "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
-   logo: "/images/default.jpeg",
-   collectionCount: "0",
-   subsectionCount: "4"
+   "name": "Section Name",
+   "uuid": "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
+   "logo": "/images/default.jpeg",
+   "collectionCount": "0",
+   "subsectionCount": "4"
 }
 ```
 
