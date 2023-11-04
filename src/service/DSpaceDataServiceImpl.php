@@ -156,27 +156,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $result->getData();
     }
 
-
-    public function getOwningCollectionByHref(string $href): array
-    {
-        $collection = $this->getRestApiResponse($href);
-        return array(
-            "name" => $collection["name"],
-            "href" => $href
-        );
-    }
-
-    public function getOwningCollection(string $uuid): array
-    {
-        $uri = $this->config["base"] . "/core/items/" . $uuid . "/owningCollection";
-        $collection = $this->getRestApiResponse($uri);
-        return array(
-            "name" => $collection["name"],
-            "uuid" => $collection["uuid"],
-            "href" => $collection["_links"]["self"]["href"]
-        );
-    }
-
     public function getCollection(string $uuid): array
     {
         $query = array (
@@ -269,8 +248,14 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                                     }
                                 }
                             }
-
                             $itemsArr[] = $model->getData();
+                        }
+                    }
+                }
+                if ($this->checkKey("_embedded", $restResponse)) {
+                    if ($this->checkKey("searchResult", $restResponse["_embedded"])) {
+                        if ($this->checkKey("page", $restResponse["_embedded"]["searchResult"])) {
+                            $result->setCount($restResponse["_embedded"]["searchResult"]["page"]["totalElements"]);
                         }
                     }
                 }
@@ -280,56 +265,28 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $result->setObjects($itemsArr);
         return $result->getData();
-
     }
 
-    private function getItemCountForCollection($collection): string
+    public function getOwningCollectionByHref(string $href): array
     {
-        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
-            if ($this->checkKey("page", $collection["items"])) {
-                return $collection["items"]["page"]["totalElements"];
-            }
-        }
-        return "0";
+        $collection = $this->getRestApiResponse($href);
+        return array(
+            "name" => $collection["name"],
+            "href" => $href
+        );
     }
 
-    private function getSubSectionCountForSection($section): string
+    public function getOwningCollection(string $uuid): array
     {
-        if ($this->checkKey("subcommunities", $section, self::COMMUNITY)) {
-            if ($this->checkKey("page", $section["subcommunities"])) {
-                return $section["subcommunities"]["page"]["totalElements"];
-            }
-        }
-        return "0";
+        $uri = $this->config["base"] . "/core/items/" . $uuid . "/owningCollection";
+        $collection = $this->getRestApiResponse($uri);
+        return array(
+            "name" => $collection["name"],
+            "uuid" => $collection["uuid"],
+            "href" => $collection["_links"]["self"]["href"]
+        );
     }
 
-    private function getCollectionCountForSection($section): string
-    {
-        if ($this->checkKey("collections", $section, self::COMMUNITY)) {
-            if ($this->checkKey("page", $section["collections"])) {
-                return $section["collections"]["page"]["totalElements"];
-            }
-        }
-        return "0";
-    }
-    private function getLogoFromResponse(?array $response) : string {
-        if ($response) {
-            if ($this->checkKey("_embedded", $response)) {
-                if ($this->checkKey("logo", $response["_embedded"])) {
-                    if ($this->checkKey("_links", $response["_embedded"]["logo"])) {
-                        if ($this->checkKey("content", $response["_embedded"]["logo"]["_links"])) {
-                            if ($this->checkKey("href", $response["_embedded"]["logo"]["_links"]["content"])) {
-                                return $response["_embedded"]["logo"]["_links"]["content"]["href"];
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            error_log("DSpace response did not include a logo");
-        }
-        return "";
-    }
     public function getCommunityLogo(string $uuid): string
     {
         $this->checkUUID($uuid);
@@ -338,29 +295,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $this->getImageUrl($logoMetadata);
     }
 
-    public function getCollectionLogo(string $uuid): string
-    {
-        $url = $this->config["base"] . "/core/collections/" . $uuid . "/logo";
-        $logoMetadata = $this->getRestApiResponse($url);
-        return $this->getImageUrl($logoMetadata);
-    }
-
-    public function getItemThumbnail(string $uuid): string
-    {
-        $url = $this->config["base"] . "/core/items/" . $uuid . "/thumbnail";
-        $thumbnailMetadata = $this->getRestApiResponse($url);
-        return $this->getImageUrl($thumbnailMetadata);
-    }
-
-    private function getCollectionCountForCommunity(?array $collections) {
-        return count($collections);
-    }
-
-    /**
-     * @param string $communityUuid
-     * @param array $params
-     * @return string
-     */
     public function getCommunityCollectionCount(string $communityUuid, array $params = []): string
     {
         $query = array (
@@ -440,7 +374,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $result->setCount($communityCollections["page"]["totalElements"]);
             }
         }
-       //var_dump($communityCollections);
         $result->setPagination($pagination);
         $result->setObjects($collections);
         return $result->getData();
@@ -495,11 +428,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             return array();
         }
 
-    }
-
-    public function getFileLink(string $uuid): string
-    {
-        return $this->config["base"] . "/core/bitstreams/" . $uuid . "/content";
     }
 
     public function getBitstreamData(string $uuid): array
@@ -591,6 +519,79 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $result->setObjects($objects);
         return $result->getData();
+    }
+
+
+    public function getFileLink(string $uuid): string
+    {
+        return $this->config["base"] . "/core/bitstreams/" . $uuid . "/content";
+    }
+
+    public function getCollectionLogo(string $uuid): string
+    {
+        $url = $this->config["base"] . "/core/collections/" . $uuid . "/logo";
+        $logoMetadata = $this->getRestApiResponse($url);
+        return $this->getImageUrl($logoMetadata);
+    }
+
+    public function getItemThumbnail(string $uuid): string
+    {
+        $url = $this->config["base"] . "/core/items/" . $uuid . "/thumbnail";
+        $thumbnailMetadata = $this->getRestApiResponse($url);
+        return $this->getImageUrl($thumbnailMetadata);
+    }
+
+    // unused
+    private function getItemCountForCollection($collection): string
+    {
+        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
+            if ($this->checkKey("page", $collection["items"])) {
+                return $collection["items"]["page"]["totalElements"];
+            }
+        }
+        return "0";
+    }
+
+    private function getSubSectionCountForSection($section): string
+    {
+        if ($this->checkKey("subcommunities", $section, self::COMMUNITY)) {
+            if ($this->checkKey("page", $section["subcommunities"])) {
+                return $section["subcommunities"]["page"]["totalElements"];
+            }
+        }
+        return "0";
+    }
+
+    private function getCollectionCountForSection($section): string
+    {
+        if ($this->checkKey("collections", $section, self::COMMUNITY)) {
+            if ($this->checkKey("page", $section["collections"])) {
+                return $section["collections"]["page"]["totalElements"];
+            }
+        }
+        return "0";
+    }
+    private function getLogoFromResponse(?array $response) : string {
+        if ($response) {
+            if ($this->checkKey("_embedded", $response)) {
+                if ($this->checkKey("logo", $response["_embedded"])) {
+                    if ($this->checkKey("_links", $response["_embedded"]["logo"])) {
+                        if ($this->checkKey("content", $response["_embedded"]["logo"]["_links"])) {
+                            if ($this->checkKey("href", $response["_embedded"]["logo"]["_links"]["content"])) {
+                                return $response["_embedded"]["logo"]["_links"]["content"]["href"];
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            error_log("DSpace response did not include a logo");
+        }
+        return "";
+    }
+
+    private function getCollectionCountForCommunity(?array $collections) {
+        return count($collections);
     }
 
     private function getSearchResultObj($data): array
@@ -708,7 +709,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                     $model->setLogo($logoHref);
                     $model->setName($collection["name"]);
                     $model->setUUID($collection["uuid"]);
-                    //var_dump($collection);
                     if ($this->checkKey("metadata", $collection)) {
                         if ($this->checkKey("dc.description", $collection["metadata"])) {
                             $model->setDescription($collection["metadata"]["dc.description"][0]["value"]);
@@ -725,7 +725,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 }
             }
         }
-
         return $collectionMap;
     }
 

@@ -10,8 +10,7 @@ class Item implements Model {
     private string $description = "";
     private string $owningCollection = "";
     private string $logo = "";
-    private $next = "";
-    private $prev = "";
+
     private array $bitstreams = array();
 
     public function setName($name): void
@@ -56,26 +55,6 @@ class Item implements Model {
     }
 
     /**
-     * Sets the href of the next page of results
-     * @param string $next
-     * @return void
-     */
-    public function setNext(string $next): void
-    {
-        $this->next = $next;
-    }
-
-    /**
-     * Sets the href of the previous page of results
-     * @param string $prev
-     * @return void
-     */
-    public function setPrev(string $prev): void
-    {
-        $this->prev = $prev;
-    }
-
-    /**
      * @return array item metadata
      * <code>
      *     array("name" => string,
@@ -85,8 +64,6 @@ class Item implements Model {
      *       "description" => string,
      *       "owningCollection" => string,
      *       "logo" => string,
-     *       "prev" => string,
-     *       "next" => string,
      *       "files" => array (
      *         "name" => string,
      *         "href" => string,
@@ -105,9 +82,7 @@ class Item implements Model {
             "date" => $this->date,
             "description" => $this->description,
             "owningCollection" => $this->owningCollection,
-            "logo" => $this->logo,
-            "prev" => $this->prev,
-            "next" => $this->next
+            "logo" => $this->logo
         );
     }
 
