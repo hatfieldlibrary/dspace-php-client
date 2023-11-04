@@ -9,13 +9,13 @@ information needed to create a fully-featured DSpace user interface.
 
 ## Endpoints
 
-__/api/endpoints__
+## /api/endpoints
 
 List of endpoints.
 
-___
 
-__/api/topevel__
+
+## /api/topevel
 
 Gets information about the top-level communities (sections)
 
@@ -47,9 +47,10 @@ Sample JSON response:
   count: 4
 }
 ```
-___
 
-__/api/sections/<:uuid>__
+
+
+## /api/sections/<:uuid>
 
 Gets information about a specific community (section).
 
@@ -70,9 +71,10 @@ logo: "/mimi/images/default.jpeg",
 count: "undefined"
 }
 ```
-___
 
-__/api/sections/<:uuid>/subsections__
+
+
+## /api/sections/<:uuid>/subsections
 
 Gets information about subsections the section with the provided uuid.
 
@@ -121,7 +123,8 @@ Sample JSON response:
   count: "4"
 }
 ```
-___
+
+
 
 ## /api/sections/<:uuid>/collections
 
