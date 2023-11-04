@@ -206,7 +206,7 @@ Sample JSON response:
   uuid: "0b6eba01-5bef-440f-a950-b29dd37db505",
   description: "This is the description of the DSpace collection.",
   shortDescription: "This is the short description of the DSpace collection.",
-  logo: "",
+  logo: "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
   itemCount: 3
 }
 ```
