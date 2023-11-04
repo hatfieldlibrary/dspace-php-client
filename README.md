@@ -62,10 +62,10 @@ Gets information about a specific community (section).
 **in:** path<br>
 **required:** true<br>
 **description:** The DSpace uuid of the community (section)
-
+ 
 Sample JSON response:
 
-```
+```json
 {
    name: "Section Name",
    uuid: "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
@@ -101,7 +101,7 @@ Gets information about subsections the section with the provided uuid.
 
 Sample JSON response:
 
-```
+```json
 {
   pagination: {
     next: {
@@ -156,7 +156,7 @@ List of the collections within the section with the provided uuid.
 
 Sample JSON response:
 
-```
+```json
 {
   pagination: {
     next: [ ],
@@ -200,7 +200,7 @@ number of items in the collection.
 
 Sample JSON response:
 
-```
+```json
 {
   name: "Collection",
   uuid: "0b6eba01-5bef-440f-a950-b29dd37db505",
@@ -208,5 +208,60 @@ Sample JSON response:
   shortDescription: "This is the short description of the DSpace collection.",
   logo: "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
   itemCount: 3
+}
+```
+
+___
+
+## /api/collections/<:uuid>/items
+
+List of items in a specific DSpace collection. 
+
+## Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the community (section)
+
+**page:** page<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page in pagination (default = 0)
+
+**page:** size<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page size used in pagination (default defined in Configuration).
+
+Sample JSON Response:
+
+```json
+{
+  pagination: {
+    next: [ ],
+    prev: [ ]
+  }, 
+  objects: [
+    {
+      name: "Item Title", 
+      uuid: "b30f3383-8653-4114-abaa-b642a6e535a1", 
+      creator: "John Doe", 
+      date: "2023", 
+      description: "Description of item.", 
+      owningCollection: "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection", 
+      logo: "http://localhost:8080/server/api/core/bitstreams/3a869688-3cfe-4074-95f5-706749f8e9d0/content"
+    }, 
+    {
+      name: "Item Title", 
+      uuid: "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f", 
+      creator: "Julie Doe", 
+      date: "2023", 
+      description: "Description of item.", 
+      owningCollection: "http://localhost:8080/server/api/core/items/b1b4aff9-1572-4e4d-be4d-a6216cc52d3f/owningCollection", 
+      logo: "http://localhost:8080/server/api/core/bitstreams/1008de2c-069f-4a01-8ef5-9b7fe0df1e92/content"
+    }
+  ], 
+  count: "2"
 }
 ```
