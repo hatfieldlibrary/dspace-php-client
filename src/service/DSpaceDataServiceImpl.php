@@ -200,7 +200,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model->setDescription($description);
         $model->setShortDescription($shortDescription);
         $model->setLogo($logoHref);
-        $model->setCount($itemCount);
+        $model->setItemCount($itemCount);
         return $model->getData();
     }
 
