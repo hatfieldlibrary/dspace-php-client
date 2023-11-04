@@ -9,8 +9,7 @@ class Collection implements Model {
     private $description = "";
     private $shortDescription = "";
     private $logo = "";
-
-    private int $count = 0;
+    private string $itemCount = "0";
 
     /**
      * Set the name of the community.
@@ -53,16 +52,14 @@ class Collection implements Model {
     }
 
     /**
-     * Set the number of collections in the community.
-     * @param $count
+     * Set the number of items in the collection.
+     * @param string $itemCount
      * @return void
      */
-    public function setCount($count): void
+    public function setItemCount(string $itemCount): void
     {
-        $this->count = $count;
+        $this->itemCount = $itemCount;
     }
-
-
 
     /**
      * Get collection data.
@@ -74,7 +71,7 @@ class Collection implements Model {
      *      "description" => string,
      *      "shortDescription" => string,
      *      "logo" => string,
-     *      "count" => int
+     *      "count" => string
      * )
      * </code>
      */
@@ -86,8 +83,9 @@ class Collection implements Model {
             "description" => $this->description,
             "shortDescription" => $this->shortDescription,
             "logo" => $this->logo,
-            "itemCount" => $this->count,
+            "itemCount" => $this->itemCount,
         );
     }
-    
+
+
 }

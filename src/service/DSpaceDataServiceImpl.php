@@ -212,7 +212,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             "embed" => "thumbnail",
             "dsoType" => "ITEM",
             "page" => 0,
-            "size" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"],
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -263,6 +263,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                                     }
                                 }
                             }
+
                             $itemsArr[] = $model->getData();
                         }
                     }
@@ -274,6 +275,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $result->setObjects($itemsArr);
         return $result->getData();
 
+    }
+
+    private function getItemCountForCollection($collection): string
+    {
+        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
+            if ($this->checkKey("page", $collection["items"])) {
+                return $collection["items"]["page"]["totalElements"];
+            }
+        }
+        return "0";
     }
 
     private function getSubSectionCountForSection($section): string
@@ -392,7 +403,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("page", $item, self::DISCOVERY)) {
             return $item["page"]["totalElements"];
         }
-        return "unknown";
+        return "0";
     }
 
     public function getCollectionsForCommunity(string $uuid, array $params = [], bool $reverseOrder = true): array
@@ -423,6 +434,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $result->setCount($communityCollections["page"]["totalElements"]);
             }
         }
+       //var_dump($communityCollections);
         $result->setPagination($pagination);
         $result->setObjects($collections);
         return $result->getData();
@@ -683,12 +695,23 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             if ($this->checkKey("collections", $communityCollections["_embedded"])) {
                 foreach ($communityCollections["_embedded"]["collections"] as $collection) {
                     $logoHref = $this->getCollectionLogo($collection["uuid"]);
-                    $current = array(
-                        "name" => $collection["name"],
-                        "uuid" => $collection["uuid"],
-                        "logo" => $logoHref
-                    );
-                    $collectionMap[] = $current;
+                    $itemCount = $this->getItemCount($collection["uuid"]);
+
+                    $model = $this->dataObjects->getCollectionModel();
+                    $model->setItemCount($itemCount);
+                    $model->setLogo($logoHref);
+                    $model->setName($collection["name"]);
+                    $model->setUUID($collection["uuid"]);
+                    //var_dump($collection);
+                    if ($this->checkKey("metadata", $collection)) {
+                        if ($this->checkKey("dc.description", $collection["metadata"])) {
+                            $model->setDescription($collection["metadata"]["dc.description"][0]["value"]);
+                        }
+                        if ($this->checkKey("dc.description.abstract", $collection["metadata"])) {
+                            $model->setShortDescription($collection["metadata"]["dc.description.abstract"][0]["value"]);
+                        }
+                    }
+                    $collectionMap[] = $model->getData();
                 }
 
                 if ($reverseOrder) {
