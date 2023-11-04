@@ -460,7 +460,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $mainImage = $file["_links"]["content"]["href"];
         }
         if ($this->checkKey("dc.title", $file["metadata"], self::BITSTREAM)) {
-            $model->setName($file["metadata"]["dc.title"][0]["value"]);
+            $model->setTitle($file["metadata"]["dc.title"][0]["value"]);
         }
         if ($this->checkKey("iiif.label", $file["metadata"], self::BITSTREAM)) {
             $model->setLabel($file["metadata"]["iiif.label"][0]["value"]);
@@ -480,6 +480,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("dc.type", $file["metadata"], self::BITSTREAM)) {
             $model->setType($file["metadata"]["dc.type"][0]["value"]);;
         }
+        $model->setName($file["name"]);
         $model->setUuid($file["uuid"]);
         $model->setHref($mainImage);
         $model->setMimetype($this->getBitstreamFormat($uuid));
