@@ -554,17 +554,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $this->getImageUrl($thumbnailMetadata);
     }
 
-    // unused
-//    private function getItemCountForCollection($collection): string
-//    {
-//        if ($this->checkKey("items", $collection, self::COMMUNITY)) {
-//            if ($this->checkKey("page", $collection["items"])) {
-//                return $collection["items"]["page"]["totalElements"];
-//
-//        }
-//        return "0";
-//    }
-
     private function getSubSectionCountForSection($section): string
     {
         if ($this->checkKey("subcommunities", $section, self::COMMUNITY)) {
@@ -619,14 +608,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("type", $data, self::DISCOVERY)) {
             $object->setType($data["type"]);
         }
-
         if ($this->checkKey("metadata", $data, self::DISCOVERY)) {
             if ($this->checkKey("dc.title", $data["metadata"], self::DISCOVERY)) {
                 $object->setTitle($data["metadata"]["dc.title"][0]["value"]);
             }
             if ($this->checkKey("dc.description.abstract", $data["metadata"], self::DISCOVERY)) {
-
                 $object->setDescription($data["metadata"]["dc.description.abstract"][0]["value"]);
+            }
+            if ($this->checkKey("dc.description", $data["metadata"], self::DISCOVERY)) {
+                $object->setDescription($data["metadata"]["dc.description"][0]["value"]);
             }
             if ($this->checkKey("dc.date.issued", $data["metadata"], self::DISCOVERY)) {
                 $object->setDate($data["metadata"]["dc.date.issued"][0]["value"]);
@@ -635,13 +625,17 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $object->setCreator($data["metadata"]["dc.contributor.author"][0]["value"]);
             }
         }
-        if ($this->checkKey("thumbnail", $data, self::DISCOVERY)) {
-            if ($this->checkKey("name", $data["thumbnail"], self::DISCOVERY)) {
-                $object->setThumbnailName($data["thumbnail"]["name"]);
+        if ($this->checkKey("_embedded", $data, self::DISCOVERY)) {
+        if ($this->checkKey("thumbnail", $data["_embedded"], self::DISCOVERY)) {
+            if ($this->checkKey("name", $data["_embedded"]["thumbnail"], self::DISCOVERY)) {
+                $object->setThumbnailName($data["_embedded"]["thumbnail"]["name"]);
             }
-            if ($this->checkKey("href", $data["thumbnail"], self::DISCOVERY)) {
-                $object->setThumbnailHref($data["thumbnail"]["href"]);
+            if ($this->checkKey("_links", $data["_embedded"]["thumbnail"], self::DISCOVERY)) {
+                if ($this->checkKey("content", $data["_embedded"]["thumbnail"]["_links"], self::DISCOVERY)) {
+                    $object->setThumbnailHref($data["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
+                }
             }
+        }
         }
         return $object->getData();
     }
