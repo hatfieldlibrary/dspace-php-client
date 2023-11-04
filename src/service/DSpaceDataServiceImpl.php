@@ -179,8 +179,14 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function getCollection(string $uuid): array
     {
+        $query = array (
+            "embed" => "logo"
+        );
         $this->checkUUID($uuid);
         $url = $this->config["base"] . "/core/collections/" . $uuid;
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
         $collection = $this->getRestApiResponse($url);
         $logoHref = $this->getLogoFromResponse($collection);
         $itemCount = $this->getItemCount($collection["uuid"]);
