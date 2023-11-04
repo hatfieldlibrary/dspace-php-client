@@ -23,31 +23,34 @@ Sample JSON response:
 
 ```json
 {
-  pagination: {
-    next: [
-       page: 1,
-       size: 5
+  "pagination": {
+    "next": [
+      {
+        "page": 1,
+        "size": 5
+      }
     ],
-    prev: [ ]
+    "prev": [ ]
   },
-  objects: {
-    Section One: {
-      name: "Section One",
-      uuid: "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
-      logo: "",
-      collectionCount: "0",
-      subsectionCount: "4"
+  "objects": {
+    "Section One": {
+      "name": "Section One",
+      "uuid": "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
+      "logo": "/images/default.jpeg",
+      "collectionCount": "0",
+      "subsectionCount": "4"
     },
-    Section Two: {
-      name: "Section Two",
-      uuid: "ce894cbb-65eb-4642-83e7-81f2fda2cec0",
-      logo: "",
-      collectionCount: "1",
-      subsectionCount: "1"
+    "Section Two": {
+      "name": "Section Two",
+      "uuid": "ce894cbb-65eb-4642-83e7-81f2fda2cec0",
+      "logo": "http://localhost:8080/server/api/core/bitstreams/ccd3874b-2b68-476b-bf21-09365f866b76/content",
+      "collectionCount": "1",
+      "subsectionCount": "1"
     }
   },
-  count: "10"
+  "count": "10"
 }
+
 ```
 
 ___
@@ -73,6 +76,7 @@ Sample JSON response:
    "collectionCount": "0",
    "subsectionCount": "4"
 }
+
 ```
 
 ___
@@ -89,45 +93,46 @@ Gets information about subsections the section with the provided uuid.
 **required:** true<br>
 **description:** The DSpace uuid of the community (section)
 
-**page:** page<br>
+**name:** page<br>
 **in:** query<br>
 **required:** false<br>
 **description:** The current page in pagination (default = 0)
 
-**page:** size<br>
+**name:** size<br>
 **in:** query<br>
 **required:** false<br>
-**description:** The current page size used in pagination (default defined in Configuration).
+**description:** The current page size used for pagination (default defined in Configuration).
 
 Sample JSON response:
 
 ```json
 {
-  pagination: {
-    next: {
-      page: "1",
-      pageSize: "2"
+  "pagination": {
+    "next": {
+      "page": "1",
+      "pageSize": "2"
     },
-    prev: {}
+    "prev": {}
   },
-  objects: {
+  "objects": {
     "Section One": {
-      name: "Section One",
-      uuid: "210d5023-daa6-4e82-a62b-2749cfd4c61d",
-      logo: "http://localhost:8080/server/api/core/bitstreams/04062743-0e22-48cd-967c-239d075000ea/content",
-      collectionCount: "1",
-      subsectionCount: "1"
+      "name": "Section One",
+      "uuid": "210d5023-daa6-4e82-a62b-2749cfd4c61d",
+      "logo": "http://localhost:8080/server/api/core/bitstreams/04062743-0e22-48cd-967c-239d075000ea/content",
+      "collectionCount": "1",
+      "subsectionCount": "1"
     },
     "Section Two": {
-      name: "Section Two",
-      uuid: "35eaa237-3e86-40a2-9973-de61914ac080",
-      logo: "http://localhost:8080/server/api/core/bitstreams/ccd3874b-2b68-476b-bf21-09365f866b76/content",
-      collectionCount: "0",
-      subsectionCount: "4"
+      "name": "Section Two",
+      "uuid": "35eaa237-3e86-40a2-9973-de61914ac080",
+      "logo": "http://localhost:8080/server/api/core/bitstreams/ccd3874b-2b68-476b-bf21-09365f866b76/content",
+      "collectionCount": "0",
+      "subsectionCount": "4"
     } 
   },
-  count: "4"
+  "count": "4"
 }
+
 ```
 
 ___
@@ -144,44 +149,45 @@ List of the collections within the section with the provided uuid.
 **required:** true<br>
 **description:** The DSpace uuid of the community (section)
 
-**page:** page<br>
+**name:** page<br>
 **in:** query<br>
 **required:** false<br>
 **description:** The current page in pagination (default = 0)
 
-**page:** size<br>
+**name:** size<br>
 **in:** query<br>
 **required:** false<br>
-**description:** The current page size used in pagination (default defined in Configuration).
+**description:** The current page size used for pagination (default defined in Configuration).
 
 Sample JSON response:
 
 ```json
 {
-  pagination: {
-    next: [ ],
-    prev: [ ]
+  "pagination": {
+    "next": [ ],
+    "prev": [ ]
   },
-  objects: [
+  "objects": [
     {
-      name: "Collection One",
-      uuid: "0b6eba01-5bef-440f-a950-b29dd37db50",
-      description: "Collection One full description.",
-      shortDescription: "Collection One short description",
-      logo: "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
-      itemCount: "3"
+      "name": "Collection One",
+      "uuid": "0b6eba01-5bef-440f-a950-b29dd37db50",
+      "description": "Collection One full description.",
+      "shortDescription": "Collection One short description",
+      "logo": "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
+      "itemCount": "3"
     },
     {
-      name: "Collection Two",
-      uuid: "1eb8d02b-3cf7-459c-a37f-dc2122a75a1f",
-      description: "Collection One full description..",
-      shortDescription: "Collection One brief description.",
-      logo: "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content", 
-      itemCount: "0"
+      "name": "Collection Two",
+      "uuid": "1eb8d02b-3cf7-459c-a37f-dc2122a75a1f",
+      "description": "Collection Two full description..",
+      "shortDescription": "Collection Two brief description.",
+      "logo": "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content", 
+      "itemCount": "0"
     }
   ],
-  count: "2"
+  "count": "2"
 }
+
 ```
 
 ___
@@ -196,19 +202,20 @@ number of items in the collection.
 **name:** uuid<br>
 **in:** path<br>
 **required:** true<br>
-**description:** The DSpace uuid of the community (section)
+**description:** The DSpace uuid of the collection.
 
 Sample JSON response:
 
 ```json
 {
-  name: "Collection",
-  uuid: "0b6eba01-5bef-440f-a950-b29dd37db505",
-  description: "This is the description of the DSpace collection.",
-  shortDescription: "This is the short description of the DSpace collection.",
-  logo: "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
-  itemCount: 3
+  "name": "Collection",
+  "uuid": "0b6eba01-5bef-440f-a950-b29dd37db505",
+  "description": "This is the description of the DSpace collection.",
+  "shortDescription": "This is the short description of the DSpace collection.",
+  "logo": "http://localhost:8080/server/api/core/bitstreams/291c1a8c-3475-4194-851c-6639f02a8331/content",
+  "itemCount": 3
 }
+
 ```
 
 ___
@@ -224,44 +231,115 @@ List of items in a specific DSpace collection.
 **required:** true<br>
 **description:** The DSpace uuid of the community (section)
 
-**page:** page<br>
+**name:** page<br>
 **in:** query<br>
 **required:** false<br>
 **description:** The current page in pagination (default = 0)
 
-**page:** size<br>
+**name:** size<br>
 **in:** query<br>
 **required:** false<br>
-**description:** The current page size used in pagination (default defined in Configuration).
+**description:** The current page size used for pagination (default defined in Configuration).
 
 Sample JSON Response:
 
 ```json
 {
-  pagination: {
-    next: [ ],
-    prev: [ ]
+  "pagination": {
+    "next": [ ],
+    "prev": [ {
+        "page": "0",
+        "pageSize": "2"
+      }
+    ]
   }, 
-  objects: [
+  "objects": [
     {
-      name: "Item Title", 
-      uuid: "b30f3383-8653-4114-abaa-b642a6e535a1", 
-      creator: "John Doe", 
-      date: "2023", 
-      description: "Description of item.", 
-      owningCollection: "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection", 
-      logo: "http://localhost:8080/server/api/core/bitstreams/3a869688-3cfe-4074-95f5-706749f8e9d0/content"
+      "name": "Item Title", 
+      "uuid": "b30f3383-8653-4114-abaa-b642a6e535a1", 
+      "creator": "John Doe", 
+      "date": "2023", 
+      "description": "Description of item.", 
+      "owningCollection": "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection", 
+      "logo": "http://localhost:8080/server/api/core/bitstreams/3a869688-3cfe-4074-95f5-706749f8e9d0/content"
     }, 
     {
-      name: "Item Title", 
-      uuid: "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f", 
-      creator: "Julie Doe", 
-      date: "2023", 
-      description: "Description of item.", 
-      owningCollection: "http://localhost:8080/server/api/core/items/b1b4aff9-1572-4e4d-be4d-a6216cc52d3f/owningCollection", 
-      logo: "http://localhost:8080/server/api/core/bitstreams/1008de2c-069f-4a01-8ef5-9b7fe0df1e92/content"
+      "name": "Item Title", 
+      "uuid": "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f", 
+      "creator": "Julie Doe", 
+      "date": "2023", 
+      "description": "Description of item.", 
+      "owningCollection": "http://localhost:8080/server/api/core/items/b1b4aff9-1572-4e4d-be4d-a6216cc52d3f/owningCollection", 
+      "logo": "http://localhost:8080/server/api/core/bitstreams/1008de2c-069f-4a01-8ef5-9b7fe0df1e92/content"
     }
   ], 
-  count: "2"
+  "count": "4"
 }
+
+```
+___
+
+## /api/items/<:uuid>
+
+Information about a specific DSpace item. 
+
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the item.
+
+Sample JSON Response:
+
+```json
+
+{"name":"Sample Item",
+  "uuid":"b30f3383-8653-4114-abaa-b642a6e535a1",
+  "creator":"John Doe",
+  "date":"2023",
+  "description":"Description of the item.",
+  "owningCollection":"http:\/\/localhost:8080\/server\/api\/core\/items\/b30f3383-8653-4114-abaa-b642a6e535a1\/owningCollection",
+  "thumbnail":"http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/3a869688-3cfe-4074-95f5-706749f8e9d0\/content"
+}
+
+```
+___
+
+## /api/items/<:uuid>/files
+
+Gets list of file for item with the provided DSpace uuid.
+
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the item.
+
+Sample JSON response:
+
+```json
+{
+  "pagination":[],
+  "objects": [
+    {
+      "name": "roger-11.jpeg",
+      "href": "http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/1ba87266-e790-475a-b5ea-d51b2b5b5ae0\/content",
+      "uuid": "1ba87266-e790-475a-b5ea-d51b2b5b5ae0",
+      "thumbnail": "http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/1ba87266-e790-475a-b5ea-d51b2b5b5ae0\/content",
+      "mimetype": "image\/jpeg",
+      "metadata": {
+        "title": "roger-11.jpeg",
+        "label": "The best photo.",
+        "medium": "Digital",
+        "dimensions": "13\" x 17\"",
+        "subject": "surrealism",
+        "description": "Image 1",
+        "type": "Illustration"
+      } 
+    }], 
+  "count": "1"
+}
+
 ```
