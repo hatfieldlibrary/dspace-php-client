@@ -19,7 +19,7 @@ __/api/topevel__
 
 Gets information about the top-level communities (sections)
 
-The JSON response:
+Sample JSON response:
 
 ```agsl
 {
@@ -43,7 +43,8 @@ The JSON response:
       logo: "http://localhost:8080/server/api/core/bitstreams/ccd3874b-2b68-476b-bf21-09365f866b76/content",
       subSectionCount: "2"
     } 
-  }
+  },
+  count: 4
 }
 ```
 ___
@@ -52,14 +53,14 @@ __/api/sections/<:uuid>__
 
 Gets information about a specific community (section).
 
-__Parameters:__
+###Parameters:
 
 **name:** uuid<br>
 **in:** path<br>
 **required:** true<br>
 **description:** The DSpace uuid of the community (section)
 
-The JSON response:
+Sample JSON response:
 
 ```
 {
@@ -73,7 +74,7 @@ ___
 
 __/api/sections/<:uuid>/subsections__
 
-Gets information about subsections within this section.
+Gets information about subsections the section with the provided uuid.
 
 ### Parameters
 
@@ -91,7 +92,8 @@ Gets information about subsections within this section.
 **in:** query<br>
 **required:** false<br>
 **description:** The current page size used in pagination (default defined in Configuration).
-The JSON response:
+
+Sample JSON response:
 
 ```
 {
@@ -115,23 +117,41 @@ The JSON response:
       logo: "http://localhost:8080/server/api/core/bitstreams/ccd3874b-2b68-476b-bf21-09365f866b76/content",
       subSectionCount: "2"
     } 
-  }
+  },
+  count: "4"
 }
 ```
 ___
 
-__/api/sections/<:uuid>/collections__
+## /api/sections/<:uuid>/collections
 
-List of the collections within this section.
+List of the collections within the section with the provided uuid.
 
-The JSON response:
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the community (section)
+
+**page:** page<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page in pagination (default = 0)
+
+**page:** size<br>
+**in:** query<br>
+**required:** false<br>
+**description:** The current page size used in pagination (default defined in Configuration).
+
+Sample JSON response:
 
 ```
 {
   pagination: {
     next: {
       page: "1",
-      pageSize: "1"
+      pageSize: "2"
     },
     prev: {}
   },
@@ -147,6 +167,30 @@ The JSON response:
       logo: "http://localhost:8080/server/api/core/bitstreams/00a76cd4-08dc-4c53-96f8-2111c110c6b4/content"
     }
   ],
-  count: "2"
+  count: "4"
+}
+```
+## /api/collections/<:uuid>
+
+Information about a specific DSpace collection. Includes count of the 
+number of items in the collection.
+
+### Parameters
+
+**name:** uuid<br>
+**in:** path<br>
+**required:** true<br>
+**description:** The DSpace uuid of the community (section)
+
+Sample JSON response:
+
+```
+{
+  name: "Collection",
+  uuid: "0b6eba01-5bef-440f-a950-b29dd37db505",
+  description: "This is the description of the DSpace collection.",
+  shortDescription: "This is the short description of the DSpace collection.",
+  logo: "",
+  itemCount: 3
 }
 ```
