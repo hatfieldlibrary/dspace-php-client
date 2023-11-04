@@ -43,7 +43,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     public function getSection(string $uuid): array {
         $this->checkUUID($uuid);
         $query = array (
-            "embed" => "logo"
+            "embed" => "subcommunities,collections,logo"
         );
         $url = $this->config["base"] . "/core/communities/" . $uuid;
         if (!empty($query)) {
@@ -51,7 +51,14 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $model = $this->dataObjects->getCommunityModel();
         $community = $this->getRestApiResponse($url);
+        if ($this->checkKey("_embedded", $community, self::COMMUNITY)) {
+            $sectionCount = $this->getSubSectionCountForSection($community["_embedded"]);
+            $model->setSubSectionCount($sectionCount);
+            $collectionCount = $this->getCollectionCountForSection($community["_embedded"]);
+            $model->setCollectionCount($collectionCount);
+        }
         $logoHref = $this->getCommunityLogo($community["uuid"]);
+
         $model->setName($community["name"]);
         $model->setUUID($community["uuid"]);
         $model->setLogo($logoHref);
@@ -63,7 +70,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $query = array (
             "page" => 0,
             "size" => $this->config["defaultPageSize"],
-            "embed" => "logo,subcommunities/logo",
+            "embed" => "logo,collections,subcommunities/logo",
             "sort" => "dc.title,ASC"
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
@@ -85,13 +92,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $model->setUUID($section["uuid"]);
                 $model->setLogo($this->getLogoFromResponse($section));
                 if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
-                    if ($this->checkKey("subcommunities", $section["_embedded"], self::COMMUNITY)) {
-                        if ($this->checkKey("_embedded", $section["_embedded"]["subcommunities"], self::COMMUNITY)) {
-                            if ($this->checkKey("subcommunities", $section["_embedded"]["subcommunities"]["_embedded"], self::COMMUNITY)) {
-                                $model->setSubsectionCount(count($section["_embedded"]["subcommunities"]["_embedded"]["subcommunities"]));
-                            }
-                        }
-                    }
+                    $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
+                    $model->setSubSectionCount($sectionCount);
+                    $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
+                    $model->setCollectionCount($collectionCount);
                 }
                 $sectionsMap[$section["name"]] = $model->getData();
             }
@@ -114,7 +118,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $query = array (
             "page" => 0,
             "size" => $this->config["defaultPageSize"],
-            "embed" => "logo,collections/logo"
+            "embed" => "logo,subcommunities,collections/logo"
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -130,23 +134,22 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model = $this->dataObjects->getCommunityModel();
         $subCommunities = $this->getRestApiResponse($url);
         if ($this->checkKey("subcommunities", $subCommunities["_embedded"], self::COMMUNITY)) {
-            foreach ($subCommunities["_embedded"]["subcommunities"] as $subComm) {
-                $model->setName($subComm["name"]);
-                $model->setUUID($subComm["uuid"]);
-                $model->setLogo($this->getLogoFromResponse($subComm));
-                if ($this->checkKey("_embedded", $subComm, self::COMMUNITY)) {
-                    if ($this->checkKey("collections", $subComm["_embedded"], self::COMMUNITY)) {
-                        if ($this->checkKey("_embedded", $subComm["_embedded"]["collections"], self::COMMUNITY)) {
-                            if ($this->checkKey("collections", $subComm["_embedded"]["collections"]["_embedded"], self::COMMUNITY)) {
-                                $model->setSubsectionCount(count($subComm["_embedded"]["collections"]["_embedded"]["collections"]));
-                            }
-                        }
+            foreach ($subCommunities["_embedded"]["subcommunities"] as $section) {
+                $model->setName($section["name"]);
+                $model->setUUID($section["uuid"]);
+                $model->setLogo($this->getLogoFromResponse($section));
+                if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
+                    if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
+                        $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
+                        $model->setSubSectionCount($sectionCount);
+                        $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
+                        $model->setCollectionCount($collectionCount);
                     }
                 }
-                $subcommitteeMap[$subComm["name"]] = $model->getData();
+                $subcommitteeMap[$section["name"]] = $model->getData();
             }
             $pagination = $this->getPagination($subCommunities);
-
+            $result->setCount($this->getTotal($subCommunities));
             $result->setPagination($pagination);
             $result->setObjects($subcommitteeMap);
         }
@@ -273,6 +276,25 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     }
 
+    private function getSubSectionCountForSection($section): string
+    {
+        if ($this->checkKey("subcommunities", $section, self::COMMUNITY)) {
+            if ($this->checkKey("page", $section["subcommunities"])) {
+                return $section["subcommunities"]["page"]["totalElements"];
+            }
+        }
+        return "0";
+    }
+
+    private function getCollectionCountForSection($section): string
+    {
+        if ($this->checkKey("collections", $section, self::COMMUNITY)) {
+            if ($this->checkKey("page", $section["collections"])) {
+                return $section["collections"]["page"]["totalElements"];
+            }
+        }
+        return "0";
+    }
     private function getLogoFromResponse(?array $response) : string {
         if ($response) {
             if ($this->checkKey("_embedded", $response)) {
@@ -796,6 +818,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $paginationModel->getData();
     }
 
+    private function getTotal(array $object) {
+        if ($this->checkKey("page", $object)) {
+            return $object["page"]["totalElements"];
+        }
+        return 0;
+    }
 
     /**
      * Utility method for checking whether a key exists in an array.

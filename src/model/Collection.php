@@ -9,16 +9,16 @@ class Collection implements Model {
     private $description = "";
     private $shortDescription = "";
     private $logo = "";
-    private $count = 0;
-    private $next = "";
-    private $prev = "";
+
+    private int $count = 0;
 
     /**
      * Set the name of the community.
      * @param $name
      * @return void
      */
-    public function setName($name) {
+    public function setName($name): void
+    {
         $this->name = $name;
     }
 
@@ -27,15 +27,18 @@ class Collection implements Model {
      * @param $uuid
      * @return void
      */
-    public function setUUID($uuid) {
+    public function setUUID($uuid): void
+    {
         $this->uuid = $uuid;
     }
 
-    public function setDescription($desc) {
+    public function setDescription($desc): void
+    {
         $this->description = $desc;
     }
 
-    public function setShortDescription($desc) {
+    public function setShortDescription($desc): void
+    {
         $this->shortDescription = $desc;
     }
     
@@ -44,7 +47,8 @@ class Collection implements Model {
      * @param $href
      * @return void
      */
-    public function setLogo($href) {
+    public function setLogo($href): void
+    {
         $this->logo = $href;
     }
 
@@ -53,30 +57,12 @@ class Collection implements Model {
      * @param $count
      * @return void
      */
-    public function setCount($count) {
+    public function setCount($count): void
+    {
         $this->count = $count;
     }
 
 
-    /**
-     * Sets the href of the next page of results
-     * @param string $next
-     * @return void
-     */
-    public function setNext(string $next): void
-    {
-        $this->next = $next;
-    }
-
-    /**
-     * Sets the href of the previous page of results
-     * @param string $prev
-     * @return void
-     */
-    public function setPrev(string $prev): void
-    {
-        $this->prev = $prev;
-    }
 
     /**
      * Get collection data.
@@ -89,8 +75,6 @@ class Collection implements Model {
      *      "shortDescription" => string,
      *      "logo" => string,
      *      "count" => int
-     *      "prev" => string,
-     *      "next" => string
      * )
      * </code>
      */
@@ -102,9 +86,7 @@ class Collection implements Model {
             "description" => $this->description,
             "shortDescription" => $this->shortDescription,
             "logo" => $this->logo,
-            "count" => $this->count,
-            "prev" => $this->prev,
-            "next" => $this->next
+            "itemCount" => $this->count,
         );
     }
     

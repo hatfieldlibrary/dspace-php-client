@@ -7,13 +7,14 @@ class Community implements Model
     private string $name = "";
     private string $uuid = "";
     private string $logo = "";
-    private string $subsectionCount = "undefined";
+    private string $collectionCount = "0";
+    private string $subSectionCount = "0";
 
 
     public function __construct() {}
 
     /**
-     * Set the name of the subcommunity.
+     * Set the name of the subcommunity (section).
      * @param $name
      * @return void
      */
@@ -23,7 +24,7 @@ class Community implements Model
     }
 
     /**
-     * Set the DSpace uuid of the subcommunity.
+     * Set the DSpace uuid of the subcommunity (section).
      * @param $uuid
      * @return void
      */
@@ -33,7 +34,7 @@ class Community implements Model
     }
 
     /**
-     * Set the URL of the subcommunity logo.
+     * Set the URL of the subcommunity (section) logo.
      * @param $href
      * @return void
      */
@@ -43,24 +44,30 @@ class Community implements Model
     }
 
     /**
-     * Set the number of collections in the subcommunity.
-     * @param $subsectionCount
+     * Set the number of collections in the subcommunity (section).
+     * @param string $collectionCount
      * @return void
      */
-    public function setSubsectionCount($subsectionCount): void
+    public function setCollectionCount(string $collectionCount): void
     {
-        $this->subsectionCount = $subsectionCount;
+        $this->collectionCount = $collectionCount;
+    }
+
+    public function setSubSectionCount(string $subSectionCount): void
+    {
+        $this->subSectionCount = $subSectionCount;
     }
 
     /**
-     * Get subcommunity data.
+     * Get subcommunity (section) data.
      * @return array
      * <code>
      *    array(
      *     "name" => $this->name,
      *     "uuid" => $this->uuid,
      *     "logo" => $this->logo,
-     *     "count" => $this->count,
+     *     "collectionCount" => string,
+     *     "subsectionCount" => string,
      * )
      * </code>
      */
@@ -70,9 +77,12 @@ class Community implements Model
             "name" => $this->name,
             "uuid" => $this->uuid,
             "logo" => $this->logo,
-            "subSectionCount" => $this->subsectionCount
+            "collectionCount" => $this->collectionCount,
+            "subsectionCount" => $this->subSectionCount
         );
     }
+
+
 
 
 }
