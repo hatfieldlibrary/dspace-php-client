@@ -257,18 +257,22 @@ Sample JSON Response:
     {
       "name": "Item Title", 
       "uuid": "b30f3383-8653-4114-abaa-b642a6e535a1", 
-      "creator": "John Doe", 
-      "date": "2023", 
-      "description": "Description of item.", 
+      "metadata": {
+        "creator": "John Doe",
+        "date": "2023",
+        "description": "Description of item."
+      },
       "owningCollection": "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection", 
       "logo": "http://localhost:8080/server/api/core/bitstreams/3a869688-3cfe-4074-95f5-706749f8e9d0/content"
     }, 
     {
       "name": "Item Title", 
-      "uuid": "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f", 
-      "creator": "Julie Doe", 
-      "date": "2023", 
-      "description": "Description of item.",
+      "uuid": "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f",
+      "metadata": {
+        "creator": "Julie Doe",
+        "date": "2023",
+        "description": "Description of item."
+      }
       "owningCollection": {
         "href": "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection"
       },
