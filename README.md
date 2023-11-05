@@ -255,9 +255,10 @@ Sample JSON Response:
   }, 
   "objects": [
     {
-      "name": "Item Title", 
+      "name": "Item One Title", 
       "uuid": "b30f3383-8653-4114-abaa-b642a6e535a1", 
       "metadata": {
+        "title": "Item One Title",
         "creator": "John Doe",
         "date": "2023",
         "description": "Description of item."
@@ -266,13 +267,14 @@ Sample JSON Response:
       "logo": "http://localhost:8080/server/api/core/bitstreams/3a869688-3cfe-4074-95f5-706749f8e9d0/content"
     }, 
     {
-      "name": "Item Title", 
+      "name": "Item Two Title", 
       "uuid": "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f",
       "metadata": {
+        "title": "Item Two Title",
         "creator": "Julie Doe",
         "date": "2023",
         "description": "Description of item."
-      }
+      },
       "owningCollection": {
         "href": "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection"
       },
