@@ -122,17 +122,6 @@ class Controller
         }
     }
 
-    public function collectionslogo($uuid): void
-    {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getCollectionLogo($uuid);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
-
     public function itemsowningcollection($uuid): void
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
@@ -154,18 +143,6 @@ class Controller
             $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
         }
     }
-
-//    public function communitiescollectionscount($uuid): void
-//    {
-//        $requestMethod = $_SERVER["REQUEST_METHOD"];
-//        $queryStringParams = $this->utils->getQueryStringParams();
-//        if ($requestMethod == 'GET') {
-//            $response = $this->service->getCommunityCollectionCount($uuid, $queryStringParams);
-//            $this->utils->outputJSON($response);
-//        } else {
-//            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-//        }
-//    }
 
     public function sectionscollections($uuid): void
     {
@@ -233,13 +210,6 @@ class Controller
             array(
                 "endpoint" => $this->config["base"] . "/sections/<uuid>/subsections",
                 "content" => "information about subsections in the section with the provided uuid (includes pagination)",
-                "returns" => array (
-                    "pagination" => array (
-                        "next" => "associative array with page and pageSize",
-                        "prev" => "associative array with page and pageSize"
-                    ),
-                    "objects" => "array of objects"
-                ),
                 "query parameters" =>
                     array(
                         array("name"=>"page",
@@ -252,18 +222,18 @@ class Controller
                             "default" => "40",
                             "optional"=> "true"
                         )
-                    )
+                    ),
+                "returns" => array (
+                    "pagination" => array (
+                        "next" => "associative array with page and pageSize",
+                        "prev" => "associative array with page and pageSize"
+                    ),
+                    "objects" => "array of objects"
+                ),
             ),
             array(
                 "endpoint" => $this->config["base"] . "/sections/<uuid>/collections",
                 "content" => "Collections in the section with the provided uuid (includes pagination)",
-                "returns" => array (
-                    "pagination" => array (
-                        "next" => "associative array with page and pageSize",
-                        "prev" => "associative array with page and pageSize"
-                    ),
-                    "objects" => "array of objects"
-                ),
                 "query parameters" =>
                     array(
                         array("name"=>"page",
@@ -276,7 +246,14 @@ class Controller
                             "default" => "40",
                             "optional"=> "true"
                         )
-                    )
+                    ),
+                "returns" => array (
+                    "pagination" => array (
+                        "next" => "associative array with page and pageSize",
+                        "prev" => "associative array with page and pageSize"
+                    ),
+                    "objects" => "array of objects"
+                )
             ),
             array(
                 "endpoint" => $this->config["base"] . "/collections/<uuid>",
@@ -286,13 +263,6 @@ class Controller
             array(
                 "endpoint" => $this->config["base"] . "/collections/<uuid>/items",
                 "content" => "The items in the collection with the provided uuid (includes pagination)",
-                "returns" => array (
-                    "pagination" => array (
-                        "next" => "associative array with page and pageSize",
-                        "prev" => "associative array with page and pageSize"
-                    ),
-                    "objects" => "array of objects"
-                ),
                 "query parameters" =>
                     array(
                         array("name"=>"page",
@@ -305,12 +275,18 @@ class Controller
                             "default" => "40",
                             "optional"=> "true"
                         )
-                    )
+                    ),
+                "returns" => array (
+                    "pagination" => array (
+                        "next" => "associative array with page and pageSize",
+                        "prev" => "associative array with page and pageSize"
+                    ),
+                    "objects" => "array of objects"
+                )
             ),
             array(
                 "endpoint" => $this->config["base"] . "/items/<uuid>",
                 "content" => "The item with the provided uuid",
-                "returns" => "object",
                 "query parameters" =>
                     array(
                         array("name"=>"format",
@@ -318,12 +294,12 @@ class Controller
                             "default" => "false",
                             "optional"=> "true"
                         )
-                    )
+                    ),
+                "returns" => "object",
             ),
             array(
                 "endpoint" => $this->config["base"] . "/items/<uuid>/files",
                 "content" => "The files for the item with the provided uuid",
-                "returns" => "array of objects",
                 "query parameters" =>
                     array(
                         array("name"=>"bundle",
@@ -331,7 +307,8 @@ class Controller
                             "default" => "ORIGINAL",
                             "optional"=> "true"
                         )
-                    )
+                    ),
+                "returns" => "array of objects",
             ),
             array (
                 "endpoint" => $this->config["base"] . "/files/<uuid>",
@@ -339,25 +316,42 @@ class Controller
                 "returns" => "object"
             ),
             array(
-                "endpoint" => $this->config["base"] . "/items/<uuid>/thumbnail",
-                "content" => "The link to the logo image for the item with the provided uuid",
-                "returns" => "string"
-            ),
-            array(
-                "endpoint" => $this->config["base"] . "/section/uuid/logo",
-                "content" => "The link to the logo image for the item with the provided uuid",
-                "returns" => "string"
-            ),
-            array(
-                "endpoint" => $this->config["base"] . "/collection/<uuid>/logo",
-                "content" => "The link to the thumbnail image for the item with the provided uuid",
-                "returns" => "string"
-            ),
-            array(
-                "endpoint" => $this->config["base"] . "/communities/<uuid>/collectionscount",
-                "content" => "The number of items in the collection with the provided uuid",
-                "returns" => "string"
+                "endpoint" => $this->config["base"] . "/search",
+                "content" => "Search for items, collections and communities. (includes pagination)",
+                "query parameters" =>
+                    array(
+                        array(
+                            "name" => "query",
+                            "value" => "the query terms",
+                            "optional" => "false"
+                        ),
+                        array(
+                            "name" => "scope",
+                            "value" => "the DSpace uuid for the search scope",
+                            "default" => "the default scope is defined in configuration",
+                            "optional" => "true"
+                        ),
+                        array("name"=>"page",
+                            "value" => "the current page in pagination",
+                            "default" => "0",
+                            "optional"=> "true"
+                        ),
+                        array("name"=>"pageSize",
+                            "value" => "the number of items per page",
+                            "default" => "40",
+                            "optional"=> "true"
+                        )
+                    ),
+            "returns" => array (
+                "pagination" => array (
+                    "next" => "associative array with page and pageSize",
+                    "prev" => "associative array with page and pageSize"
+                ),
+                "objects" => "array of objects",
+                "count" => "result count"
             )
+            )
+
         );
         $this->utils->outputJSON($endpoints);
     }

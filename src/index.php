@@ -58,7 +58,7 @@ function callController(object & $controller, object & $utils, string $method, s
         restore_error_handler();
         return $resp;
     } catch (Exception $err) {
-        $utils->outputJSON("Something went wrong.", array("HTTP/1.1 500 Server Error"));
+        $utils->outputJSON("There was an error when executing the requested service. Check the server log for details. For complete logs use debug mode in Configuration.", array("HTTP/1.1 500 Server Error"));
         error_log($err);
     }
     return null;
