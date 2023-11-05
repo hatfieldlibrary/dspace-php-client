@@ -443,13 +443,7 @@ Sample JSON response:
       "type": "community",
       "metadata": {
         "title": "Thesis",
-        "creator": "",
-        "description": "Description of the Thesis collection.",
-        "date": ""
-      },
-      "thumbnail": {
-        "name": "",
-        "href": ""
+        "description": "Section Name description ..."
       }
     }
   ],
