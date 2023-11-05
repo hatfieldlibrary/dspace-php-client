@@ -8,7 +8,9 @@ class Item implements Model {
     private string $creator = "";
     private string $date = "";
     private string $description = "";
-    private string $owningCollection = "";
+    private string $owningCollectionHref = "";
+    private string $owningCollectionName = "";
+    private string $owningCollectionUuid  = "";
     private string $thumbnail = "";
 
     private array $bitstreams = array();
@@ -34,9 +36,9 @@ class Item implements Model {
         $this->date = $date;
     }
 
-    public function setOwningCollection(string $owningCollection): void
+    public function setOwningCollectionHref(string $owningCollection): void
     {
-        $this->owningCollection = $owningCollection;
+        $this->owningCollectionHref = $owningCollection;
     }
 
     public function setThumbnail(string $thumbnail): void
@@ -52,6 +54,16 @@ class Item implements Model {
     public function setBitstreams(array $bitstreams): void
     {
         $this->bitstreams = $bitstreams;
+    }
+
+    public function setOwningCollectionName(string $owningCollectionName): void
+    {
+        $this->owningCollectionName = $owningCollectionName;
+    }
+
+    public function setOwningCollectionUuid(string $owningCollectionUuid): void
+    {
+        $this->owningCollectionUuid = $owningCollectionUuid;
     }
 
 
@@ -77,16 +89,31 @@ class Item implements Model {
      */
     public function getData(): array
     {
-        return array(
+        $response = array(
             "name" => $this->name,
             "uuid" => $this->uuid,
-            "creator" => $this->creator,
-            "date" => $this->date,
-            "description" => $this->description,
-            "owningCollection" => $this->owningCollection,
-            "thumbnail" => $this->thumbnail
         );
+        if (strlen($this->description) > 0) {
+            $response["description"] = $this->description;
+        }
+        if (strlen($this->creator) > 0) {
+            $response["creator"] = $this->creator;
+        }
+        if (strlen($this->date) > 0) {
+            $response["date"] = $this->date;
+        }
+        if (strlen($this->owningCollectionHref) > 0) {
+            $response["owningCollection"]["href"] = $this->owningCollectionHref;
+        }
+        if (strlen($this->owningCollectionName) > 0) {
+            $response["owningCollection"]["name"] = $this->owningCollectionName;
+        }
+        if (strlen($this->owningCollectionUuid) > 0) {
+            $response["owningCollection"]["uuid"] = $this->owningCollectionUuid;
+        }
+        if (strlen($this->thumbnail) > 0) {
+            $response["thumbnail"] = $this->thumbnail;
+        }
+        return $response;
     }
-
-
 }

@@ -68,23 +68,31 @@ class Collection implements Model {
      *    array(
      *      "name" => string,
      *      "uuid" => string,
-     *      "description" => string,
-     *      "shortDescription" => string,
-     *      "logo" => string,
+     *      "description" => string | undefined,
+     *      "shortDescription" => string | undefined,
+     *      "logo" => string | undefined,
      *      "count" => string
      * )
      * </code>
      */
     public function getData() : array
     {
-        return array(
+        $response = array(
             "name" => $this->name,
             "uuid" => $this->uuid,
-            "description" => $this->description,
-            "shortDescription" => $this->shortDescription,
-            "logo" => $this->logo,
             "itemCount" => $this->itemCount,
         );
+        if (strlen($this->shortDescription) > 0) {
+            $response["shortDescription"] = $this->shortDescription;
+        }
+        if (strlen($this->description) > 0) {
+            $response["description"] = $this->description;
+        }
+        if (strlen($this->logo) > 0) {
+            $response["logo"] = $this->logo;
+        }
+        return $response;
+
     }
 
 

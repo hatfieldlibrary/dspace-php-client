@@ -60,21 +60,31 @@ class SearchObject implements Model {
 
     function getData(): array
     {
-        return array(
+        $response = array(
             "name" => $this->name,
             "uuid" => $this->uuid,
             "type" => $this->type,
-            "metadata" => array (
-                "title" => $this->title,
-                "creator" => $this->creator,
-                "description" => $this->description,
-                "date" => $this->date
-            ),
-            "thumbnail" => array (
-                "name" => $this->thumbnailName,
-                "href" => $this->thumbnailHref
-            )
         );
+        if (strlen($this->thumbnailName) > 0) {
+            $response["thumbnail"]["name"] = $this->thumbnailName;
+        }
+        if (strlen($this->thumbnailHref) > 0) {
+            $response["thumbnail"]["href"] = $this->thumbnailHref;
+        }
+        if (strlen($this->title) > 0) {
+            $response["metadata"]["title"] = $this->title;
+        }
+        if (strlen($this->creator) > 0) {
+            $response["metadata"]["creator"] = $this->creator;
+        }
+        if (strlen($this->description) > 0) {
+            $response["metadata"]["description"] = $this->description;
+        }
+        if (strlen($this->date) > 0) {
+            $response["metadata"]["date"] = $this->date;
+        }
+        return $response;
+
     }
 
 }

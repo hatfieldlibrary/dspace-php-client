@@ -101,24 +101,37 @@ class Bitstream implements Model {
      */
     public function getData(): array
     {
-        return array (
+        $response = array(
             "name" => $this->name,
             "href" => $this->href,
             "uuid" => $this->uuid,
-            "thumbnail" => $this->thumbnail,
             "mimetype" =>$this->mimetype,
-            "metadata" => array(
-                "title" => $this->title,
-                "label" => $this->label,
-                "medium" => $this->medium,
-                "dimensions" => $this->dimensions,
-                "subject" => $this->subject,
-                "description" => $this->description,
-                "type" => $this->type
-            )
         );
+        if (strlen($this->thumbnail) > 0)  {
+            $response["thumbnail"] = $this->thumbnail;
+        }
+        if (strlen($this->title) > 0)  {
+            $response["metadata"]["title"] = $this->title;
+        }
+        if (strlen($this->label) > 0)  {
+            $response["metadata"]["label"] = $this->label;
+        }
+        if (strlen($this->medium) > 0)  {
+            $response["metadata"]["medium"] = $this->medium;
+        }
+        if (strlen($this->dimensions) > 0)  {
+            $response["metadata"]["dimensions"] = $this->dimensions;
+        }
+        if (strlen($this->subject) > 0)  {
+            $response["metadata"]["subject"] = $this->subject;
+        }
+        if (strlen($this->description) > 0)  {
+            $response["metadata"]["description"] = $this->description;
+        }
+        if (strlen($this->type) > 0)  {
+            $response["metadata"]["type"] = $this->type;
+        }
+        return $response;
     }
-
-
 
 }

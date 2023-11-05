@@ -73,13 +73,16 @@ class Community implements Model
      */
     public function getData(): array
     {
-        return array(
+        $response = array(
             "name" => $this->name,
             "uuid" => $this->uuid,
-            "logo" => $this->logo,
             "collectionCount" => $this->collectionCount,
             "subsectionCount" => $this->subSectionCount
         );
+        if (strlen($this->logo) > 0) {
+            $response["logo"] = $this->logo;
+        }
+        return $response;
     }
 
 
