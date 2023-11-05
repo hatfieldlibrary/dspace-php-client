@@ -58,19 +58,6 @@ interface DSpaceDataService {
     function getSubSections(string $uuid, array $params = []): array;
 
     /**
-     * Gets the name and href of the owning collection for an item.
-     * @param $href string the href of the owning collection endpoint
-     * @return array
-     * <code>
-     *     array(
-     *     "name" => string,
-     *     "href" => string
-     * )
-     * </code>
-     */
-    function getOwningCollection(string $uuid): array;
-
-    /**
      * Gets information about a specific DSpace collection.
      * @param $uuid string DSpace collection uuid
      * @return array  an array of collection information
@@ -108,45 +95,36 @@ interface DSpaceDataService {
     function getCollectionItems(string $uuid, array $params = []): array;
 
     /**
-     * Gets href for the DSpace community logo
-     * @param $uuid string the DSpace community uuid
-     * @return string
-     */
-    function getCommunityLogo(string $uuid): string;
-
-    /**
-     * Gets href for the DSpace collection logo
-     * @param $uuid string the DSpace collection uuid
-     * @return string
-     */
-    function getCollectionLogo(string $uuid): string;
-
-    /**
-     * Gets href for the DSpace item thumbnail image
-     * @param $uuid string the DSpace item uuid
-     * @return string
-     */
-    function getItemThumbnail(string $uuid): string;
-
-    /**
-     * @param $communityUuid string the DSpace community uuid
-     * @param $params array optional DSpace request parameters
-     * @return string
-     */
-   // function getCommunityCollectionCount(string $communityUuid, array $params = []): string;
-
-    /**
-     * Extracts and returns collection information from an embedded DSpace API response element.
+     * Gets list of collections for the community (section) with the provided uuid.
      * @param $uuid string uuid of the DSpace community
      * @param $params array optional query parameters
      * @param $reverseOrder boolean optional value that reverses order of the collection array (defaults to true)
-     * @return array [
-     *   "name" => string,
-     *   "href" => string,
-     *   "thumbnail" => string,
-     *   "uuid" => string,
-     *   "mimetype" => string
-     * ]
+     * @return array
+     * <code>
+     *   array(
+     *     "pagination" => array (
+     *       "next" => array (
+     *          "page" => string,
+     *          "size" => string
+     *        )
+     *        "prev" => array (
+     *           "page" => string,
+     *           "size" => string
+     *         ),
+     *     ),
+     *     "objects" => array (
+     *          array (
+     *            "name" => string,
+     *            "uuid" => string,
+     *            "description" => string,
+     *            "shortDescription" => string,
+     *            "logo" => string,
+     *            "itemCount => string
+     *          )
+     *     ),
+     *     "count" => string
+     *   )
+     * </code>
      */
     function getCollectionsForCommunity(string $uuid, array $params = [], bool $reverseOrder = true): array;
 
@@ -191,13 +169,6 @@ interface DSpaceDataService {
     function getItemFiles(string $uuid, string $bundleName = "ORIGINAL"): array;
 
     /**
-     * Creates the full URL for bitstream content in DSpace based on the uuid
-     * @param $uuid string the DSpace uuid for the file
-     * @return string file url
-     */
-    function getFileLink(string $uuid): string;
-
-    /**
      * Gets metadata for a DSpace bitstream
      * @param $uuid string the DSpace bitstream uuid
      * @return array
@@ -215,6 +186,11 @@ interface DSpaceDataService {
      */
     function getBitstreamData(string $uuid): array;
 
+    /**
+     * Gets information about the community (section) with the provided uuid.
+     * @param string $uuid
+     * @return array
+     */
     function getSection(string $uuid): array;
 
 }

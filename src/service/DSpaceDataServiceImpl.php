@@ -12,14 +12,6 @@ require_once __DIR__ . "/../Utils.php";
 class DSpaceDataServiceImpl implements DSpaceDataService
 {
 
-    private array $config;
-
-    private Utils $utils;
-
-    private DataObjects $dataObjects;
-
-    private string $defaultScope;
-
     private const ITEM = "ITEM";
     private const COMMUNITY = "COMMUNITY";
     private const COLLECTION = "COLLECTION";
@@ -27,8 +19,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     private const BUNDLE = "BUNDLE";
     private const BITSTREAM = "BITSTREAM";
     private const PARAMS = "REQUEST PARAMETER";
-
     private const REQUEST_FAILED = "DSPACE_REQUEST_ERROR";
+
+    private array $config;
+
+    private Utils $utils;
+
+    private DataObjects $dataObjects;
 
     public function __construct()
     {
@@ -37,7 +34,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $this->dataObjects = new DataObjects();
         $this->utils = new Utils();
 
-        $this->defaultScope = $this->config["scope"];
     }
 
     public function getSection(string $uuid): array {
@@ -50,17 +46,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $url .= '?' . http_build_query($query);
         }
         $model = $this->dataObjects->getCommunityModel();
-        $community = $this->getRestApiResponse($url);
-        if ($this->checkKey("_embedded", $community, self::COMMUNITY)) {
-            $sectionCount = $this->getSubSectionCountForSection($community["_embedded"]);
+        $section = $this->getRestApiResponse($url);
+        if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
+            $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
             $model->setSubSectionCount($sectionCount);
-            $collectionCount = $this->getCollectionCountForSection($community["_embedded"]);
+            $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
             $model->setCollectionCount($collectionCount);
         }
-        $logoHref = $this->getCommunityLogo($community["uuid"]);
-
-        $model->setName($community["name"]);
-        $model->setUUID($community["uuid"]);
+        $logoHref = $this->getLogoFromResponse($section);
+        $model->setName($section["name"]);
+        $model->setUUID($section["uuid"]);
         $model->setLogo($logoHref);
         return $model->getData();
     }
@@ -101,7 +96,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             }
             if ($this->checkKey("page", $sections)) {
                 if ($this->checkKey("totalElements", $sections["page"])) {
-                    $result->setCount($sections["page"]["totalElements"]);
+                    $result->setCount($this->getTotal($sections));
                 }
             }
             $pagination = $this->getPagination($sections);
@@ -233,7 +228,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                             }
                             if ($this->checkKey('owningCollection', $object["_links"],
                                 self::ITEM)) {
-                                $model->setOwningCollection($object["_links"]["owningCollection"]["href"]);
+                                $model->setOwningCollectionHref($object["_links"]["owningCollection"]["href"]);
                             }
                             if ($this->checkKey('thumbnail', $object["_embedded"], self::ITEM)) {
                                 if ($this->checkKey('_links', $object["_embedded"]["thumbnail"],
@@ -267,89 +262,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $result->getData();
     }
 
-    public function getOwningCollectionByHref(string $href): array
-    {
-        $collection = $this->getRestApiResponse($href);
-        return array(
-            "name" => $collection["name"],
-            "href" => $href
-        );
-    }
-
-    public function getOwningCollection(string $uuid): array
-    {
-        $uri = $this->config["base"] . "/core/items/" . $uuid . "/owningCollection";
-        $collection = $this->getRestApiResponse($uri);
-        return array(
-            "name" => $collection["name"],
-            "uuid" => $collection["uuid"],
-            "href" => $collection["_links"]["self"]["href"]
-        );
-    }
-
-    public function getCommunityLogo(string $uuid): string
-    {
-        $this->checkUUID($uuid);
-        $url = $this->config["base"] . "/core/communities/" . $uuid . "/logo";
-        $logoMetadata = $this->getRestApiResponse($url);
-        return $this->getImageUrl($logoMetadata);
-    }
-
-//    public function getCommunityCollectionCount(string $communityUuid, array $params = []): string
-//    {
-//        $query = array (
-//            "page" => 0,
-//            "size" => $this->config["defaultPageSize"]
-//        );
-//        if ($this->checkKey("page", $params, self::PARAMS)) {
-//            $query["page"] = $params["page"];
-//        }
-//        if ($this->checkKey("pageSize", $params, self::PARAMS)) {
-//            $query["pageSize"] = $params["pageSize"];
-//        }
-//        $url = $this->config["base"] . "/core/communities/" . $communityUuid . "/collections";
-//        if (!empty($query)) {
-//            $url .= '?' . http_build_query($query);
-//        }
-//        $count = $this->getRestApiResponse($url);
-//        if ($count == self::REQUEST_FAILED) {
-//            return $count;
-//        }
-//        return $count["page"]["totalElements"];
-//    }
-
-    /**
-     * DSpace currently does not return the item count with the collection responses.
-     * This method makes a title browse request for the collection and returns the
-     * number of items. It is not efficient and can be slow.
-     * @param string $uuid
-     * @return string
-     */
-    private function getItemCount(string $uuid): string
-    {
-        $query = array (
-            "page" => 0,
-            "size" => 1,
-            "scope" => $uuid,
-            "dsoType" => "ITEM"
-        );
-        $url = $this->config["base"] . "/discover/browses/title/items";
-        if (!empty($query)) {
-            $url .= '?' . http_build_query($query);
-        }
-        $item = $this->getRestApiResponse($url);
-
-        if ($this->checkKey("page", $item, self::DISCOVERY)) {
-            return $item["page"]["totalElements"];
-        }
-        return "0";
-    }
-
     public function getCollectionsForCommunity(string $uuid, array $params = [], bool $reverseOrder = true): array
     {
         $query = array (
             "page" => 0,
-            "size" => $this->config["defaultPageSize"]
+            "size" => $this->config["defaultPageSize"],
+            "embed" => "collection/logo"
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -370,7 +288,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $result = $this->dataObjects->getObjectsList();
         if ($this->checkKey("page", $communityCollections)) {
             if ($this->checkKey("totalElements", $communityCollections["page"])) {
-                $result->setCount($communityCollections["page"]["totalElements"]);
+                $result->setCount($this->getTotal($communityCollections));
             }
         }
         $result->setPagination($pagination);
@@ -381,7 +299,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     public function getItem(string $uuid, bool $formatDescription = false): array
     {
         $query = array (
-            "embed" => "thumbnail"
+            "embed" => "thumbnail,owningCollection"
         );
         $url = $this->config["base"] . "/core/items/" . $uuid;
         if (!empty($query)) {
@@ -405,13 +323,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             }
             $model->setDescription($desc);
         }
-        if ($this->checkKey("owningCollection", $item["_links"], self::ITEM)) {
-            $model->setOwningCollection($item["_links"]["owningCollection"]["href"]);
-        }
         if ($this->checkKey("thumbnail", $item["_embedded"], self::ITEM)) {
-            $thumb = $this->getFileLink($item["_embedded"]["thumbnail"]["uuid"]);
-            $model->setThumbnail($thumb);
+            if ($this->checkKey("_links", $item["_embedded"]["thumbnail"], self::ITEM)) {
+                $model->setThumbnail($item["_embedded"]["thumbnail"]["_links"]["self"]["href"]);
+            }
         }
+        $owningCollection = $this->getOwningCollectionFromResponse($item);
+        $model->setOwningCollectionName($owningCollection["name"]);
+        $model->setOwningCollectionUuid($owningCollection["uuid"]);
+        $model->setOwningCollectionHref($owningCollection["href"]);
+
         return $model->getData();
     }
 
@@ -444,13 +365,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function getBitstreamData(string $uuid): array
     {
-        $query = array (
-            "embed" => "bitstreams/format"
-        );
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid;
-        if (!empty($query)) {
-            $url .= '?' . http_build_query($query);
-        }
         $thumbnail = "";
         $mainImage = "";
         $file = $this->getRestApiResponse($url);
@@ -459,27 +374,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $thumbnail = $this->getThumbnail($file["_links"]["self"]["href"]);
             $mainImage = $file["_links"]["content"]["href"];
         }
-        if ($this->checkKey("dc.title", $file["metadata"], self::BITSTREAM)) {
-            $model->setTitle($file["metadata"]["dc.title"][0]["value"]);
-        }
-        if ($this->checkKey("iiif.label", $file["metadata"], self::BITSTREAM)) {
-            $model->setLabel($file["metadata"]["iiif.label"][0]["value"]);
-        }
-        if ($this->checkKey("dc.description", $file["metadata"], self::BITSTREAM)) {
-            $model->setDescription($file["metadata"]["dc.description"][0]["value"]);
-        }
-        if ($this->checkKey("dc.format.medium", $file["metadata"], self::BITSTREAM)) {
-            $model->setMedium($file["metadata"]["dc.format.medium"][0]["value"]);
-        }
-        if ($this->checkKey("dc.format.extent", $file["metadata"], self::BITSTREAM)) {
-            $model->setDimensions($file["metadata"]["dc.format.extent"][0]["value"]);
-        }
-        if ($this->checkKey("dc.subject.other", $file["metadata"], self::BITSTREAM)) {
-            $model->setSubject($file["metadata"]["dc.subject.other"][0]["value"]);
-        }
-        if ($this->checkKey("dc.type", $file["metadata"], self::BITSTREAM)) {
-            $model->setType($file["metadata"]["dc.type"][0]["value"]);;
-        }
+        $this->getBitstreamMetadata($file, $model);
         $model->setName($file["name"]);
         $model->setUuid($file["uuid"]);
         $model->setHref($mainImage);
@@ -534,24 +429,77 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $result->getData();
     }
 
-
-    public function getFileLink(string $uuid): string
+    /**
+     * Sets metadata on the <code>Bitstream</code> model.
+     * @param array $object the array with the metadata key
+     * @param Bitstream $model the model to update
+     * @return void
+     */
+    private function getBitstreamMetadata(array $object, Bitstream & $model): void
     {
-        return $this->config["base"] . "/core/bitstreams/" . $uuid . "/content";
+        if ($this->checkKey("dc.title", $object["metadata"], self::BITSTREAM)) {
+            $model->setTitle($object["metadata"]["dc.title"][0]["value"]);
+        }
+        if ($this->checkKey("iiif.label", $object["metadata"], self::BITSTREAM)) {
+            $model->setLabel($object["metadata"]["iiif.label"][0]["value"]);
+        }
+        if ($this->checkKey("dc.description", $object["metadata"], self::BITSTREAM)) {
+            $model->setDescription($object["metadata"]["dc.description"][0]["value"]);
+        }
+        if ($this->checkKey("dc.format.medium", $object["metadata"], self::BITSTREAM)) {
+            $model->setMedium($object["metadata"]["dc.format.medium"][0]["value"]);
+        }
+        if ($this->checkKey("dc.format.extent", $object["metadata"], self::BITSTREAM)) {
+            $model->setDimensions($object["metadata"]["dc.format.extent"][0]["value"]);
+        }
+        if ($this->checkKey("dc.subject.other", $object["metadata"], self::BITSTREAM)) {
+            $model->setSubject($object["metadata"]["dc.subject.other"][0]["value"]);
+        }
+        if ($this->checkKey("dc.type", $object["metadata"], self::BITSTREAM)) {
+            $model->setType($object["metadata"]["dc.type"][0]["value"]);;
+        }
     }
 
-    public function getCollectionLogo(string $uuid): string
+    /**
+     * DSpace currently does not return the item count with the collection responses.
+     * This method makes a title browse request for the collection and returns the
+     * number of items. It is not efficient and can be slow.
+     * @param string $uuid
+     * @return string
+     */
+    private function getItemCount(string $uuid): string
+    {
+        $query = array (
+            "page" => 0,
+            "size" => 1,
+            "scope" => $uuid,
+            "dsoType" => "ITEM"
+        );
+        $url = $this->config["base"] . "/discover/browses/title/items";
+        if (!empty($query)) {
+            $url .= '?' . http_build_query($query);
+        }
+        $item = $this->getRestApiResponse($url);
+
+        if ($this->checkKey("page", $item, self::DISCOVERY)) {
+            return $item["page"]["totalElements"];
+        }
+        return "0";
+    }
+
+    /**
+     * Gets the url of the collection logo. This function appears to be
+     * needed when retrieving information about collections within a DSpace
+     * community (section). In that case, the DSpace API does not support
+     * embedding the collection logo in the response.
+     * @param string $uuid the collection uuid
+     * @return string the url of the collection logo
+     */
+    private function getCollectionLogo(string $uuid): string
     {
         $url = $this->config["base"] . "/core/collections/" . $uuid . "/logo";
         $logoMetadata = $this->getRestApiResponse($url);
         return $this->getImageUrl($logoMetadata);
-    }
-
-    public function getItemThumbnail(string $uuid): string
-    {
-        $url = $this->config["base"] . "/core/items/" . $uuid . "/thumbnail";
-        $thumbnailMetadata = $this->getRestApiResponse($url);
-        return $this->getImageUrl($thumbnailMetadata);
     }
 
     private function getSubSectionCountForSection($section): string
@@ -592,11 +540,35 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return "";
     }
 
-    private function getCollectionCountForCommunity(?array $collections) {
-        return count($collections);
+    private function getOwningCollectionFromResponse($response) : array {
+        $owner = array();
+        if ($response) {
+
+            if ($this->checkKey("_embedded", $response)) {
+                if ($this->checkKey("owningCollection", $response["_embedded"])) {
+                    $owner["name"] = $response["_embedded"]["owningCollection"]["name"];
+                    $owner["uuid"] = $response["_embedded"]["owningCollection"]["uuid"];
+                    if ($this->checkKey("_links", $response["_embedded"]["owningCollection"])) {
+                        if ($this->checkKey("self", $response["_embedded"]["owningCollection"]["_links"])) {
+                            if ($this->checkKey("href", $response["_embedded"]["owningCollection"]["_links"]["self"])) {
+                                $owner["href"] = $response["_embedded"]["owningCollection"]["_links"]["self"]["href"];
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            error_log("DSpace response did not include a logo");
+        }
+        return $owner;
     }
 
-    private function getSearchResultObj($data): array
+    /**
+     * Gets the <code>SearchResult</code> object.
+     * @param $data array the DSpace object
+     * @return array
+     */
+    private function getSearchResultObj(array $data): array
     {
         $object = $this->dataObjects->getSearchObject();
         if ($this->checkKey("name", $data, self::DISCOVERY)) {
@@ -640,12 +612,22 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $object->getData();
     }
 
-    private function getBitstreamFormat($uuid) {
+    /**
+     * Gets the file format. It appears that the file format can't
+     * be embedded in the DSpace API response. So it must be retrieved
+     * using the format linked entity.
+     * @param $uuid string the file uuid
+     * @return string
+     */
+    private function getBitstreamFormat(string $uuid) : string {
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid . "/format";
         $format = $this->getRestApiResponse($url);
-        return $format["mimetype"];
-
+        if ($this->checkKey("mimetype", $format)) {
+            return $format["mimetype"];
+        }
+        return "";
     }
+
     private function getThumbnail(string $href): string
     {
         $images = $this->getRestApiResponse($href);
@@ -677,9 +659,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     private function getBundle(array $bundles, string $bundleName): array
     {
         $bundle = array();
-        foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
-            if ($currentBundle["name"] == $bundleName) {
-                $bundle = $currentBundle;
+        if ($this->checkKey("_embedded", $bundles)) {
+            if ($this->checkKey("bundles", $bundles["_embedded"])) {
+                foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
+                    if ($currentBundle["name"] == $bundleName) {
+                        $bundle = $currentBundle;
+                    }
+                }
             }
         }
         return $bundle;
@@ -780,27 +766,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                         $mimeType = $image["_embedded"]["format"]["mimetype"];
                     }
                 }
-                if ($this->checkKey("dc.title", $image["metadata"], self::BITSTREAM)) {
-                    $model->setTitle($image["metadata"]["dc.title"][0]["value"]);
-                }
-                if ($this->checkKey("iiif.label", $image["metadata"], self::BITSTREAM)) {
-                    $model->setLabel($image["metadata"]["iiif.label"][0]["value"]);
-                }
-                if ($this->checkKey("dc.description", $image["metadata"], self::BITSTREAM)) {
-                    $model->setDescription($image["metadata"]["dc.description"][0]["value"]);
-                }
-                if ($this->checkKey("dc.format.medium", $image["metadata"], self::BITSTREAM)) {
-                    $model->setMedium($image["metadata"]["dc.format.medium"][0]["value"]);
-                }
-                if ($this->checkKey("dc.format.extent", $image["metadata"], self::BITSTREAM)) {
-                    $model->setDimensions($image["metadata"]["dc.format.extent"][0]["value"]);
-                }
-                if ($this->checkKey("dc.subject.other", $image["metadata"], self::BITSTREAM)) {
-                    $model->setSubject($image["metadata"]["dc.subject.other"][0]["value"]);
-                }
-                if ($this->checkKey("dc.type", $image["metadata"], self::BITSTREAM)) {
-                    $model->setType($image["metadata"]["dc.type"][0]["value"]);;
-                }
+                $this->getBitstreamMetadata($image, $model);
             }
 
             $model->setName($image["name"]);
@@ -878,13 +844,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         if(!is_null($array)) {
             $found = array_key_exists($key, $array);
-            if (!$found && $this->config["debug"]) {
-                error_log("WARNING: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
+            if (!$found) {
+                error_log("ERROR: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
             }
             return $found;
         } else {
             // NOTE: It might be a good idea to throw an exception here.
-            error_log("ERROR: A null array was provided to the checkKey function. This should not
+            error_log("ERROR: Checking key: " . $key . ". A null array was provided to the checkKey function. This should not
                 happen. There was likely a problem parsing the Dspace API response.");
         }
         return false;
