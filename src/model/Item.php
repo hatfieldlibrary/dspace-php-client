@@ -13,8 +13,6 @@ class Item implements Model {
     private string $owningCollectionUuid  = "";
     private string $thumbnail = "";
 
-    private array $bitstreams = array();
-
     public function setName($name): void
     {
         $this->name = $name;
