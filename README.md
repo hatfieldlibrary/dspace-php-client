@@ -333,6 +333,14 @@ Gets list of files for item with the provided DSpace uuid.
 **required:** true<br>
 **description:** The DSpace uuid of the item.
 
+**name:** bundle<br>
+**in:** query<br>
+**required:** false<br>
+**description:** Name of alternate bundle for images. 
+
+Note that if thumbnail images for the individual files don't exist in DSpace a default 
+image will be used.
+
 Sample JSON response:
 
 ```json
