@@ -12,6 +12,8 @@ class Item implements Model {
     private string $owningCollectionName = "";
     private string $owningCollectionUuid  = "";
     private string $thumbnail = "";
+    private string $rights = "";
+    private string $rightsLink = "";
 
     public function setName($name): void
     {
@@ -64,6 +66,15 @@ class Item implements Model {
         $this->owningCollectionUuid = $owningCollectionUuid;
     }
 
+    public function setRights(string $rights): void
+    {
+        $this->rights = $rights;
+    }
+
+    public function setRightsLink(string $rightsLink): void
+    {
+        $this->rightsLink = $rightsLink;
+    }
 
     /**
      * @return array item metadata
@@ -92,13 +103,19 @@ class Item implements Model {
             "uuid" => $this->uuid,
         );
         if (strlen($this->description) > 0) {
-            $response["description"] = $this->description;
+            $response["metadata"]["description"] = $this->description;
         }
         if (strlen($this->creator) > 0) {
-            $response["creator"] = $this->creator;
+            $response["metadata"]["creator"] = $this->creator;
         }
         if (strlen($this->date) > 0) {
-            $response["date"] = $this->date;
+            $response["metadata"]["date"] = $this->date;
+        }
+        if (strlen($this->rights) > 0) {
+            $response["metadata"]["rights"] = $this->rights;
+        }
+        if (strlen($this->rightsLink) > 0) {
+            $response["metadata"]["rights.uri"] = $this->rightsLink;
         }
         if (strlen($this->owningCollectionHref) > 0) {
             $response["owningCollection"]["href"] = $this->owningCollectionHref;
@@ -114,4 +131,5 @@ class Item implements Model {
         }
         return $response;
     }
+
 }

@@ -16,6 +16,8 @@ class Bitstream implements Model {
     private string $subject = "";
     private string $description = "";
     private string $type = "";
+    private string $rights = "";
+    private string $rightsLink = "";
 
     public function setName(string $name): void
     {
@@ -78,6 +80,16 @@ class Bitstream implements Model {
         $this->title = $title;
     }
 
+    public function setRights(string $rights): void
+    {
+        $this->rights = $rights;
+    }
+
+    public function setRightsLink(string $rightsLink): void
+    {
+        $this->rightsLink = $rightsLink;
+    }
+
     /**
      * @return array bitstream metadata
      * <code>
@@ -130,6 +142,12 @@ class Bitstream implements Model {
         }
         if (strlen($this->type) > 0)  {
             $response["metadata"]["type"] = $this->type;
+        }
+        if (strlen($this->rights) > 0) {
+            $response["metadata"]["rights"] = $this->rights;
+        }
+        if (strlen($this->rightsLink) > 0) {
+            $response["metadata"]["rights.uri"] = $this->rightsLink;
         }
         return $response;
     }

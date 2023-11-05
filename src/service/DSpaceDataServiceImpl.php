@@ -316,6 +316,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("dc.date.issued", $metadata, self::ITEM)) {
             $model->setDate($metadata["dc.date.issued"][0]["value"]);
         }
+        if ($this->checkKey("dc.rights", $metadata, self::ITEM)) {
+            $model->setRights($metadata["dc.rights"][0]["value"]);
+        }
+        if ($this->checkKey("dc.rights.uri", $metadata, self::ITEM)) {
+            $model->setRightsLink($metadata["dc.rights.uri"][0]["value"]);
+        }
+        if ($this->checkKey("dc.date.issued", $metadata, self::ITEM)) {
+            $model->setDate($metadata["dc.date.issued"][0]["value"]);
+        }
         if ($this->checkKey("dc.description.abstract", $metadata, self::ITEM)) {
             $desc = $metadata["dc.description.abstract"][0]["value"];
             if ($formatDescription) {
@@ -457,6 +466,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         if ($this->checkKey("dc.type", $object["metadata"], self::BITSTREAM)) {
             $model->setType($object["metadata"]["dc.type"][0]["value"]);;
+        }
+        if ($this->checkKey("dc.rights", $object["metadata"], self::BITSTREAM)) {
+            $model->setRights($object["metadata"]["dc.rights"][0]["value"]);;
+        }
+        if ($this->checkKey("dc.rights.uri", $object["metadata"], self::BITSTREAM)) {
+            $model->setRightsLink($object["metadata"]["dc.rights.uri"][0]["value"]);;
         }
     }
 
