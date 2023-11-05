@@ -111,55 +111,12 @@ class Controller
         }
     }
 
-    public function sectionslogo($uuid): void
-    {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getCommunityLogo($uuid);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
-
-    public function itemsowningcollection($uuid): void
-    {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getOwningCollection($uuid);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
-
-    public function itemsthumbnail($uuid): void
-    {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getItemThumbnail($uuid);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
-
     public function sectionscollections($uuid): void
     {
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $queryStringParams = $this->utils->getQueryStringParams();
         if ($requestMethod == 'GET') {
             $response = $this->service->getCollectionsForCommunity($uuid, $queryStringParams);
-            $this->utils->outputJSON($response);
-        } else {
-            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
-        }
-    }
-
-    public function fileslink($uuid) {
-        $requestMethod = $_SERVER["REQUEST_METHOD"];
-        if ($requestMethod == 'GET') {
-            $response = $this->service->getFileLink($uuid);
             $this->utils->outputJSON($response);
         } else {
             $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
