@@ -84,7 +84,7 @@ ___
 
 ## /api/sections/<:uuid>/subsections
 
-Gets information about subsections the section with the provided uuid.
+Gets list of subsections within the section with the provided uuid.
 
 ### Parameters
 
@@ -194,7 +194,7 @@ ___
 
 ## /api/collections/<:uuid>
 
-Information about a specific DSpace collection. Includes count of the 
+Information about a specific DSpace collection. Includes the 
 number of items in the collection.
 
 ### Parameters
@@ -222,7 +222,7 @@ ___
 
 ## /api/collections/<:uuid>/items
 
-List of items in a specific DSpace collection. 
+List of items within a specific DSpace collection with the provided uuid. 
 
 ## Parameters
 
@@ -268,8 +268,10 @@ Sample JSON Response:
       "uuid": "b1b4aff9-1572-4e4d-be4d-a6216cc52d3f", 
       "creator": "Julie Doe", 
       "date": "2023", 
-      "description": "Description of item.", 
-      "owningCollection": "http://localhost:8080/server/api/core/items/b1b4aff9-1572-4e4d-be4d-a6216cc52d3f/owningCollection", 
+      "description": "Description of item.",
+      "owningCollection": {
+        "href": "http://localhost:8080/server/api/core/items/b30f3383-8653-4114-abaa-b642a6e535a1/owningCollection"
+      },
       "logo": "http://localhost:8080/server/api/core/bitstreams/1008de2c-069f-4a01-8ef5-9b7fe0df1e92/content"
     }
   ], 
@@ -293,14 +295,17 @@ Information about a specific DSpace item.
 Sample JSON Response:
 
 ```json
-
 {
   "name":"Sample Item",
   "uuid":"b30f3383-8653-4114-abaa-b642a6e535a1",
   "creator":"John Doe",
   "date":"2023",
   "description":"Description of the item.",
-  "owningCollection":"http:\/\/localhost:8080\/server\/api\/core\/items\/b30f3383-8653-4114-abaa-b642a6e535a1\/owningCollection",
+  "owningCollection":{
+    "href": "http://localhost:8080/server/api/core/collections/0b6eba01-5bef-440f-a950-b29dd37db505",
+    "name": "Owning Collection Name",
+    "uuid": "0b6eba01-5bef-440f-a950-b29dd37db505"
+  },
   "thumbnail":"http:\/\/localhost:8080\/server\/api\/core\/bitstreams\/3a869688-3cfe-4074-95f5-706749f8e9d0\/content"
 }
 
@@ -309,7 +314,7 @@ ___
 
 ## /api/items/<:uuid>/files
 
-Gets list of file for item with the provided DSpace uuid.
+Gets list of files for item with the provided DSpace uuid.
 
 ### Parameters
 
@@ -383,7 +388,8 @@ ___
 
 ## /api/search
 
-Search for items, collections and sections.
+Search for DSpace items, collections and communities (sections). Response includes the
+type of DSpace object (item, collection, or community).
 
 ## Parameters
 
