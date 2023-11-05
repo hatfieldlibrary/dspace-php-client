@@ -11,7 +11,6 @@ Class Configuration {
              * Base url of DSpace REST API
              */
             "base"=>"http://localhost:8080/server/api",
-            //"base"=>"https://digitalcollections.willamette.edu/server/api",
 
             "scope" => "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
             /**
@@ -28,7 +27,7 @@ Class Configuration {
              */
             "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
             /**
-             * When true all DSpace API responses are written to the log file.
+             * When true all DSpace API requests and responses are written to the log file.
              * This is verbose. The value should be false when not actively debugging or developing.
              */
             "debug" => false
