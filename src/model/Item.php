@@ -5,6 +5,7 @@ require_once __DIR__ . "/Model.php";
 class Item implements Model {
     private string $name = "";
     private string $uuid = "";
+    private string $title = "";
     private string $creator = "";
     private string $date = "";
     private string $description = "";
@@ -76,6 +77,11 @@ class Item implements Model {
         $this->rightsLink = $rightsLink;
     }
 
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
     /**
      * @return array item metadata
      * <code>
@@ -102,6 +108,9 @@ class Item implements Model {
             "name" => $this->name,
             "uuid" => $this->uuid,
         );
+        if (strlen($this->title) > 0) {
+            $response["metadata"]["title"] = $this->title;
+        }
         if (strlen($this->description) > 0) {
             $response["metadata"]["description"] = $this->description;
         }
@@ -131,5 +140,6 @@ class Item implements Model {
         }
         return $response;
     }
+
 
 }

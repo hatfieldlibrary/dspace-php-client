@@ -217,6 +217,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                             $model->setName($object["name"]);
                             $model->setUUID($object["uuid"]);
                             $metadata = $object["metadata"];
+                            if ($this->checkKey('dc.title', $metadata, self::ITEM)) {
+                                $model->setTitle($metadata["dc.title"][0]["value"]);
+                            }
                             if ($this->checkKey('dc.contributor.author', $metadata, self::ITEM)) {
                                 $model->setAuthor($metadata["dc.contributor.author"][0]["value"]);
                             }
