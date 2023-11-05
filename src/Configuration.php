@@ -28,7 +28,7 @@ Class Configuration {
              */
             "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
             /**
-             * When true DSpace API responses and parsing errors are written to the log file.
+             * When true all DSpace API responses are written to the log file.
              * This is verbose. The value should be false when not actively debugging or developing.
              */
             "debug" => false
