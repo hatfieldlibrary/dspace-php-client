@@ -298,9 +298,13 @@ Sample JSON Response:
 {
   "name":"Sample Item",
   "uuid":"b30f3383-8653-4114-abaa-b642a6e535a1",
-  "creator":"John Doe",
-  "date":"2023",
-  "description":"Description of the item.",
+  "metadata" :{
+    "description": "Description of item ...</p>",
+    "creator": "Jane Doe",
+    "date": "2023",
+    "rights": "Educational use allowed.",
+    "rights.uri": "https://rights.edu"
+  },
   "owningCollection":{
     "href": "http://localhost:8080/server/api/core/collections/0b6eba01-5bef-440f-a950-b29dd37db505",
     "name": "Owning Collection Name",
@@ -342,7 +346,9 @@ Sample JSON response:
         "dimensions": "13\" x 17\"",
         "subject": "surrealism",
         "description": "Image 1",
-        "type": "Illustration"
+        "type": "Illustration",
+        "rights": "Educational use allowed.",
+        "rights.uri": "https://rights.edu"
       } 
     }], 
   "count": "1"
