@@ -383,7 +383,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $file = $this->getRestApiResponse($url);
         $model = $this->dataObjects->getBitstreamModel();
         if ($this->checkKey("self", $file["_links"], self::BITSTREAM)) {
-            $thumbnail = $this->getThumbnail($file["_links"]["self"]["href"]);
+            $thumbnail = $this->getThumbnailLink($file["_links"]["self"]["href"]);
             $mainImage = $file["_links"]["content"]["href"];
         }
         $this->getBitstreamMetadata($file, $model);
@@ -646,7 +646,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return "";
     }
 
-    private function getThumbnail(string $href): string
+    private function getThumbnailLink(string $href): string
     {
         $images = $this->getRestApiResponse($href);
         return $this->getImageUrl($images);
@@ -680,7 +680,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("_embedded", $bundles)) {
             if ($this->checkKey("bundles", $bundles["_embedded"])) {
                 foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
-                    if ($currentBundle["name"] == $bundleName) {
+                    $b = $currentBundle["name"];
+                    if ($b == $bundleName) {
                         $bundle = $currentBundle;
                     }
                 }
@@ -769,26 +770,28 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             }
         }
         $imageArr = array();
-        foreach ($bitstreams as $image) {
+
+        foreach ($bitstreams as $file) {;
             $model = $this->dataObjects->getBitstreamModel();
             $thumbnail = "";
             $mainImage = "";
             $mimeType = "";
-            if ($this->checkKey("_links", $image, self::BITSTREAM)) {
-                if ($this->checkKey("self", $image["_links"], self::BITSTREAM)) {
-                    $thumbnail = $this->getThumbnail($image["_links"]["self"]["href"]);
-                    $mainImage = $image["_links"]["content"]["href"];
+            if ($this->checkKey("_links", $file, self::BITSTREAM)) {
+                if ($this->checkKey("thumbnail", $file["_links"], self::BITSTREAM)) {
+                    $thumbnail = $this->getThumbnailLink($file["_links"]["thumbnail"]["href"]);
                 }
-                if ($this->checkKey("_embedded", $image, self::BITSTREAM)) {
-                    if ($this->checkKey("format", $image["_embedded"], self::BITSTREAM)) {
-                        $mimeType = $image["_embedded"]["format"]["mimetype"];
+                if ($this->checkKey("content", $file["_links"], self::BITSTREAM)) {
+                    $mainImage = $file["_links"]["content"]["href"];
+                }
+                if ($this->checkKey("_embedded", $file, self::BITSTREAM)) {
+                    if ($this->checkKey("format", $file["_embedded"], self::BITSTREAM)) {
+                        $mimeType = $file["_embedded"]["format"]["mimetype"];
                     }
                 }
-                $this->getBitstreamMetadata($image, $model);
+                $this->getBitstreamMetadata($file, $model);
             }
-
-            $model->setName($image["name"]);
-            $model->setUuid($image["uuid"]);
+            $model->setName($file["name"]);
+            $model->setUuid($file["uuid"]);
             $model->setHref($mainImage);
             $model->setMimetype($mimeType);
             $model->setThumbnail($thumbnail);
@@ -863,7 +866,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if(!is_null($array)) {
             $found = array_key_exists($key, $array);
             if (!$found) {
-                error_log("ERROR: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
+                error_log("WARNING: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
             }
             return $found;
         } else {
@@ -884,6 +887,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         try {
 
+            if ($this->config["debug"]) {
+                error_log("DEBUG: DSpace API request: " . $url);
+            }
             set_error_handler(
                 function ($err_severity, $err_msg, $err_file, $err_line)
                 { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },

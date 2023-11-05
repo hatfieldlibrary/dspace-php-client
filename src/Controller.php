@@ -85,11 +85,11 @@ class Controller
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $queryStringParams = $this->utils->getQueryStringParams();
         if ($requestMethod == 'GET') {
-            $format = "false";
             $bundle = "ORIGINAL";
             if ($queryStringParams) {
                 if (array_key_exists("bundle",$queryStringParams)) {
                     $bundle = $queryStringParams["bundle"];
+                    $bundle = trim($bundle,'"');
                 }
             }
             $response = $this->service->getItemFiles($uuid, $bundle);
