@@ -16,7 +16,7 @@ information needed to create a fully-featured DSpace user interface.
   - [Single Collection](#collections)
   - [List of Items in Collection](#items-collections)
   - [Single Item](#item)
-  - [List of Files for Item](#files)
+  - [List of Files for Item](#item-files)
   - [Single File](#single-file)
   - [Search Queries](#search)
   - [Count of Items in Collection](#itemcount)
@@ -345,7 +345,7 @@ Sample JSON Response:
 ```
 ___
 
-<a id="files"></a>
+<a id="item-files"></a>
 ## /api/items/<:uuid>/files
 
 Gets list of files for the item with the provided DSpace uuid.
