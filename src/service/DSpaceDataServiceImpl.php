@@ -281,9 +281,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $pagination = $this->getPagination($communityCollections);
         $collections = $this->getCollections($communityCollections, $reverseOrder);
         $result = $this->dataObjects->getObjectsList();
-
         $result->setCount($this->getTotal($communityCollections));
-
         $result->setPagination($pagination);
         $result->setObjects($collections);
         return $result->getData();
@@ -678,23 +676,19 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      * Returns collection information from DSpace community metadata with embedded collections.
      * @param $communityCollections array DSpace community metadata
      * @param $reverseOrder boolean optional value that reverses order of the array (defaults to true)
-     * @return array
+     * @return array the array of collection objects
      * <code>
-     * array(
-     *    array(
-     *      "name" => string,
-     *      "href" => string,
-     *      "thumbnail" => string,
-     *      "uuid" => string,
-     *      "mimetype" => string
-     *    )
-     * )
+     * ['name']             string The name of the collection
+     * ['uuid']             string The uuid of the collection
+     * ['itemCount']        string (optional) The number of items in the collection (see Configuration)
+     * ['shortDescription'] string The short description of the collection
+     * ['description']      string (optional) The description of the collection
+     * ['logo']             string The href of the collection logo (if available)
      * </code>
      */
     private function getCollections(array $communityCollections, bool $reverseOrder = true): array
     {
         $embeddedCollectionsPath = array("_embedded", "collections");
-
         $collectionMap = array();
         if ($this->checkPath($embeddedCollectionsPath, $communityCollections, self::COLLECTION)) {
             foreach ($communityCollections["_embedded"]["collections"] as $collection) {
@@ -725,18 +719,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     }
 
     /**
-     * Gets information about bitstreams (e.g. images) in the DSpace bundle.
-     * @param $bundle array the DSpace bundle metadata
-     * <code>
-     *      array (
-     *        "name" => string,
-     *        "href" => string,
-     *        "thumbnail" => string,
-     *        "uuid" => string,
-     *        "mimetype" => string
-     *  )
-     *  </code>
-     * @throws Exception (see log file)
+     * Gets information about bitstreams (e.g. image files) in the DSpace bundle.
+     * @param array $bundle
+     * @return ObjectsList
      */
     private function getBitstreams(array $bundle): ObjectsList
     {
