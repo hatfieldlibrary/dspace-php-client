@@ -6,7 +6,7 @@ require __DIR__ . "/DataObjects.php";
 require_once __DIR__ . "/../Utils.php";
 
 /**
- * PHP service class for retrieving Community, Collection, Item, and Bitstream
+ * PHP service class implementation for retrieving Community, Collection, Item, and Bitstream
  * information from the DSpace REST API.
  */
 class DSpaceDataServiceImpl implements DSpaceDataService
@@ -46,7 +46,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $model = $this->dataObjects->getCommunityModel();
+        $model = $this->dataObjects->getSectionModel();
         $section = $this->getRestApiResponse($url);
         $sectionCount = $this->getSubSectionCountForSection($section);
         $model->setSubSectionCount($sectionCount);
@@ -79,7 +79,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $sections = $this->getRestApiResponse($url);
         $result = $this->dataObjects->getObjectsList();
-        $model = $this->dataObjects->getCommunityModel();
+        $model = $this->dataObjects->getSectionModel();
         if ($this->checkKey("communities", $sections["_embedded"], self::COMMUNITY)) {
             foreach ($sections["_embedded"]["communities"] as $section) {
                 $model->setName($section["name"]);
@@ -123,7 +123,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $url .= '?' . http_build_query($query);
         }
         $result = $this->dataObjects->getObjectsList();
-        $model = $this->dataObjects->getCommunityModel();
+        $model = $this->dataObjects->getSectionModel();
         $subCommunities = $this->getRestApiResponse($url);
         if ($this->checkKey("subcommunities", $subCommunities["_embedded"], self::COMMUNITY)) {
             foreach ($subCommunities["_embedded"]["subcommunities"] as $section) {
@@ -256,7 +256,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $result->getData();
     }
 
-    public function getCollectionsForCommunity(string $uuid, array $params = [], bool $reverseOrder = true): array
+    public function getCollectionsForSection(string $uuid, array $params = [], bool $reverseOrder = true): array
     {
         $query = array (
             "page" => 0,
@@ -303,6 +303,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $metadata = $item["metadata"];
         $model->setName($item["name"]);
         $model->setUUID($item["uuid"]);
+        if ($this->checkKey("dc.title", $metadata, self::ITEM)) {
+            $model->setTitle($metadata["dc.title"][0]["value"]);
+        }
         if ($this->checkKey("dc.contributor.author", $metadata, self::ITEM)) {
             $model->setAuthor($metadata["dc.contributor.author"][0]["value"]);
         }
@@ -506,21 +509,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             return $item["page"]["totalElements"];
         }
         return "0";
-    }
-
-    /**
-     * Gets the url of the collection logo. This function appears to be
-     * needed when retrieving information about collections within a DSpace
-     * community (section). In that case, the DSpace API does not support
-     * embedding the collection logo in the response.
-     * @param string $uuid the collection uuid
-     * @return string the url of the collection logo
-     */
-    private function getCollectionLogo(string $uuid): string
-    {
-        $url = $this->config["base"] . "/core/collections/" . $uuid . "/logo";
-        $logoMetadata = $this->getRestApiResponse($url);
-        return $this->getImageUrl($logoMetadata);
     }
 
     private function getSubSectionCountForSection($section): string

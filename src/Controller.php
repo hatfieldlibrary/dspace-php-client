@@ -116,7 +116,7 @@ class Controller
         $requestMethod = $_SERVER["REQUEST_METHOD"];
         $queryStringParams = $this->utils->getQueryStringParams();
         if ($requestMethod == 'GET') {
-            $response = $this->service->getCollectionsForCommunity($uuid, $queryStringParams);
+            $response = $this->service->getCollectionsForSection($uuid, $queryStringParams);
             $this->utils->outputJSON($response);
         } else {
             $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));

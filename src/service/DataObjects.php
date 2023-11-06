@@ -10,7 +10,7 @@ require __DIR__ . "/../model/SearchObject.php";
 
 class DataObjects {
 
-    public function getCommunityModel(): Community
+    public function getSectionModel(): Community
     {
         return new Community();
     }
