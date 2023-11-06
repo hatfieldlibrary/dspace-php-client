@@ -10,8 +10,7 @@ Class Configuration {
             /**
              * Base url of DSpace REST API
              */
-            //"base"=>"http://localhost:8080/server/api",
-            "base" => "https://digitalcollections.willamette.edu/server/api",
+            "base"=>"http://localhost:8080/server/api",
             /**
              * The default DSpace scope. Used for search.
              */
@@ -36,7 +35,7 @@ Class Configuration {
              */
             "retrieveItemCounts" => true,
             /**
-             * When true all DSpace API requests and responses are written to the log file.
+             * When true all DSpace API requests, responses and key lookups are written to the log file.
              * This is verbose. The value should be false when not actively debugging or developing.
              */
             "debug" => false

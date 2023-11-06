@@ -18,6 +18,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     private const DISCOVERY = "DISCOVERY";
     private const BUNDLE = "BUNDLE";
     private const BITSTREAM = "BITSTREAM";
+    private const LOGO = "LOGO";
     private const PARAMS = "REQUEST PARAMETER";
     private const REQUEST_FAILED = "DSPACE_REQUEST_ERROR";
 
@@ -47,12 +48,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $model = $this->dataObjects->getCommunityModel();
         $section = $this->getRestApiResponse($url);
-        if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
-            $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
-            $model->setSubSectionCount($sectionCount);
-            $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
-            $model->setCollectionCount($collectionCount);
-        }
+        $sectionCount = $this->getSubSectionCountForSection($section);
+        $model->setSubSectionCount($sectionCount);
+        $collectionCount = $this->getCollectionCountForSection($section);
+        $model->setCollectionCount($collectionCount);
         $logoHref = $this->getLogoFromResponse($section);
         $model->setName($section["name"]);
         $model->setUUID($section["uuid"]);
@@ -86,12 +85,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $model->setName($section["name"]);
                 $model->setUUID($section["uuid"]);
                 $model->setLogo($this->getLogoFromResponse($section));
-                if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
-                    $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
-                    $model->setSubSectionCount($sectionCount);
-                    $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
-                    $model->setCollectionCount($collectionCount);
-                }
+                $sectionCount = $this->getSubSectionCountForSection($section);
+                $model->setSubSectionCount($sectionCount);
+                $collectionCount = $this->getCollectionCountForSection($section);
+                $model->setCollectionCount($collectionCount);
                 $sectionsMap[$section["name"]] = $model->getData();
             }
             if ($this->checkKey("page", $sections)) {
@@ -133,14 +130,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $model->setName($section["name"]);
                 $model->setUUID($section["uuid"]);
                 $model->setLogo($this->getLogoFromResponse($section));
-                if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
-                    if ($this->checkKey("_embedded", $section, self::COMMUNITY)) {
-                        $sectionCount = $this->getSubSectionCountForSection($section["_embedded"]);
-                        $model->setSubSectionCount($sectionCount);
-                        $collectionCount = $this->getCollectionCountForSection($section["_embedded"]);
-                        $model->setCollectionCount($collectionCount);
-                    }
-                }
+                $sectionCount = $this->getSubSectionCountForSection($section);
+                $model->setSubSectionCount($sectionCount);
+                $collectionCount = $this->getCollectionCountForSection($section);
+                $model->setCollectionCount($collectionCount);
                 $subcommitteeMap[$section["name"]] = $model->getData();
             }
             $pagination = $this->getPagination($subCommunities);
@@ -169,13 +162,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model->setItemCount($itemCount);
         $description = "";
         $shortDescription = "";
-        if ($this->checkKey("metadata", $collection, self::COLLECTION)) {
-            if ($this->checkKey("dc.description.abstract", $collection["metadata"], self::COLLECTION)) {
-                $shortDescription = $collection["metadata"]["dc.description.abstract"][0]["value"];
-            }
-            if ($this->checkKey("dc.description", $collection["metadata"], self::COLLECTION)) {
-                $description = $collection["metadata"]["dc.description"][0]["value"];
-            }
+
+        $abstract = array("metadata","dc.description.abstract");
+        $desc = array("metadata","dc.description");
+
+        if ($this->checkPath($abstract, $collection,self::COLLECTION )) {
+            $shortDescription = $collection["metadata"]["dc.description.abstract"][0]["value"];
+        }
+        if ($this->checkPath($desc, $collection,self::COLLECTION )) {
+            $description = $collection["metadata"]["dc.description"][0]["value"];
         }
 
         $model->setName($collection["name"]);
@@ -209,56 +204,50 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $restResponse = $this->getRestApiResponse($url);
         $itemsArr = array();
         $result = $this->dataObjects->getObjectsList();
-        if ($this->checkKey("searchResult", $restResponse["_embedded"], self::DISCOVERY)) {
-            if ($this->checkKey("_embedded", $restResponse["_embedded"]["searchResult"], self::DISCOVERY)) {
-                foreach ($restResponse["_embedded"]["searchResult"]["_embedded"] as &$restElement) {
-                    foreach ($restElement as &$item) {
-                        $model = $this->dataObjects->getItemModel();
-                        if ($this->checkKey("indexableObject", $item["_embedded"], self::ITEM)) {
-                            $object = ($item["_embedded"]["indexableObject"]);
-                            $model->setName($object["name"]);
-                            $model->setUUID($object["uuid"]);
-                            $metadata = $object["metadata"];
-                            if ($this->checkKey('dc.title', $metadata, self::ITEM)) {
-                                $model->setTitle($metadata["dc.title"][0]["value"]);
-                            }
-                            if ($this->checkKey('dc.contributor.author', $metadata, self::ITEM)) {
-                                $model->setAuthor($metadata["dc.contributor.author"][0]["value"]);
-                            }
-                            if ($this->checkKey('dc.date.issued', $metadata, self::ITEM)) {
-                                $model->setDate($metadata["dc.date.issued"][0]["value"]);
-                            }
-                            if ($this->checkKey('dc.description.abstract', $metadata, self::ITEM)) {
-                                $model->setDescription($metadata["dc.description.abstract"][0]["value"]);
-                            }
-                            if ($this->checkKey('owningCollection', $object["_links"],
-                                self::ITEM)) {
-                                $model->setOwningCollectionHref($object["_links"]["owningCollection"]["href"]);
-                            }
-                            if ($this->checkKey('thumbnail', $object["_embedded"], self::ITEM)) {
-                                if ($this->checkKey('_links', $object["_embedded"]["thumbnail"],
-                                    self::ITEM)) {
-                                    if ($this->checkKey('content', $object["_embedded"]["thumbnail"]["_links"],
-                                        self::ITEM)) {
-                                        if (
-                                            $this->checkKey('href', $object["_embedded"]["thumbnail"]["_links"]["content"],
-                                                self::ITEM)) {
-                                            $model->setThumbnail($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
-                                        }
-                                    }
-                                }
-                            }
-                            $itemsArr[] = $model->getData();
-                        }
+
+        $embeddedResult = array();
+        $resultPath = array("_embedded", "searchResult","_embedded");
+        if ($this->checkPath($resultPath, $restResponse, self::DISCOVERY)) {
+            $embeddedResult = $restResponse["_embedded"]["searchResult"]["_embedded"];
+        }
+        foreach ($embeddedResult as &$restElement) {
+            foreach ($restElement as &$item) {
+                $model = $this->dataObjects->getItemModel();
+                if ($this->checkKey("indexableObject", $item["_embedded"], self::ITEM)) {
+                    $object = ($item["_embedded"]["indexableObject"]);
+                    $model->setName($object["name"]);
+                    $model->setUUID($object["uuid"]);
+                    $metadata = $object["metadata"];
+                    if ($this->checkKey('dc.title', $metadata, self::ITEM)) {
+                        $model->setTitle($metadata["dc.title"][0]["value"]);
                     }
-                }
-                if ($this->checkKey("_embedded", $restResponse)) {
-                    if ($this->checkKey("searchResult", $restResponse["_embedded"])) {
-                        if ($this->checkKey("page", $restResponse["_embedded"]["searchResult"])) {
-                            $result->setCount($restResponse["_embedded"]["searchResult"]["page"]["totalElements"]);
-                        }
+                    if ($this->checkKey('dc.contributor.author', $metadata, self::ITEM)) {
+                        $model->setAuthor($metadata["dc.contributor.author"][0]["value"]);
                     }
+                    if ($this->checkKey('dc.date.issued', $metadata, self::ITEM)) {
+                        $model->setDate($metadata["dc.date.issued"][0]["value"]);
+                    }
+                    if ($this->checkKey('dc.description.abstract', $metadata, self::ITEM)) {
+                        $model->setDescription($metadata["dc.description.abstract"][0]["value"]);
+                    }
+                    if ($this->checkKey('owningCollection', $object["_links"],
+                        self::ITEM)) {
+                        $model->setOwningCollectionHref($object["_links"]["owningCollection"]["href"]);
+                    }
+
+                    $thumbPath = array("_embedded","thumbnail","_links","content","href");
+                    if ($this->checkPath($thumbPath , $object,self::COLLECTION )) {
+                        $model->setThumbnail($object["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
+                    }
+
+                    $itemsArr[] = $model->getData();
                 }
+
+                $totalPath = array("_embedded","searchResult","page","totalElements");
+                if ($this->checkPath($totalPath, $restResponse, self::ITEM)) {
+                    $result->setCount($restResponse["_embedded"]["searchResult"]["page"]["totalElements"]);
+                }
+
                 $pagination = $this->getPagination($restResponse["_embedded"]["searchResult"]);
                 $result->setPagination($pagination);
             }
@@ -288,14 +277,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($communityCollections == self::REQUEST_FAILED) {
             return array();
         }
+
         $pagination = $this->getPagination($communityCollections);
         $collections = $this->getCollections($communityCollections, $reverseOrder);
         $result = $this->dataObjects->getObjectsList();
-        if ($this->checkKey("page", $communityCollections)) {
-            if ($this->checkKey("totalElements", $communityCollections["page"])) {
-                $result->setCount($this->getTotal($communityCollections));
-            }
-        }
+
+        $result->setCount($this->getTotal($communityCollections));
+
         $result->setPagination($pagination);
         $result->setObjects($collections);
         return $result->getData();
@@ -337,11 +325,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             }
             $model->setDescription($desc);
         }
-        if ($this->checkKey("thumbnail", $item["_embedded"], self::ITEM)) {
-            if ($this->checkKey("_links", $item["_embedded"]["thumbnail"], self::ITEM)) {
-                $model->setThumbnail($item["_embedded"]["thumbnail"]["_links"]["self"]["href"]);
-            }
+
+        $thumbPath = array("_embedded","thumbnail","_links","self","href");
+        if ($this->checkPath($thumbPath, $item, self::ITEM)) {
+            $model->setThumbnail($item["_embedded"]["thumbnail"]["_links"]["self"]["href"]);
         }
+
         $owningCollection = $this->getOwningCollectionFromResponse($item);
         $model->setOwningCollectionName($owningCollection["name"]);
         $model->setOwningCollectionUuid($owningCollection["uuid"]);
@@ -422,20 +411,23 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $url .= '?' . http_build_query($query);
         }
         $response = $this->getRestApiResponse($url);
+
         $result = $this->dataObjects->getObjectsList();
         $objects = array();
-        if ($this->checkKey("_embedded", $response, self::DISCOVERY)) {
-            if ($this->checkKey("searchResult", $response["_embedded"], self::DISCOVERY)) {
-                $result->setCount($response["_embedded"]["searchResult"]["page"]["totalElements"]);
-                $result->setPagination($this->getPagination($response["_embedded"]["searchResult"]));
-                if ($this->checkKey("_embedded", $response["_embedded"]["searchResult"], self::DISCOVERY)) {
-                    if ($this->checkKey("objects", $response["_embedded"]["searchResult"]["_embedded"], self::DISCOVERY)) {
-                        $respObjects = $response["_embedded"]["searchResult"]["_embedded"]["objects"];
-                        foreach ($respObjects as $obj) {
-                            $object = $this->getSearchResultObj($obj["_embedded"]["indexableObject"]);
-                            $objects[] = $object;
-                        }
-                    }
+
+        $embeddedResultPath = array("_embedded", "searchResult");
+        $searchResultsPath = array("_embedded", "searchResult", "_embedded", "objects");
+        $embeddedObject = array("_embedded", "indexableObject");
+
+        if ($this->checkPath($embeddedResultPath, $response, self::DISCOVERY)) {
+            $result->setCount($this->getTotal($response["_embedded"]["searchResult"]));
+            $result->setPagination($this->getPagination($response["_embedded"]["searchResult"]));
+        }
+        if ($this->checkPath($searchResultsPath, $response, self::DISCOVERY)) {
+            $respObjects = $response["_embedded"]["searchResult"]["_embedded"]["objects"];
+            foreach ($respObjects as $obj) {
+                if ($this->checkPath($embeddedObject, $obj, self::DISCOVERY)) {
+                    $objects[] = $this->getSearchResultObj($obj["_embedded"]["indexableObject"]);
                 }
             }
         }
@@ -533,38 +525,37 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     private function getSubSectionCountForSection($section): string
     {
-        if ($this->checkKey("subcommunities", $section, self::COMMUNITY)) {
-            if ($this->checkKey("page", $section["subcommunities"])) {
-                return $section["subcommunities"]["page"]["totalElements"];
-            }
+        $sectionCountPath = array("_embedded", "subcommunities", "page", "totalElements");
+        if ($this->checkPath($sectionCountPath, $section, self::COMMUNITY)) {
+            return $section["_embedded"]["subcommunities"]["page"]["totalElements"];
         }
         return "0";
     }
 
     private function getCollectionCountForSection($section): string
     {
-        if ($this->checkKey("collections", $section, self::COMMUNITY)) {
-            if ($this->checkKey("page", $section["collections"])) {
-                return $section["collections"]["page"]["totalElements"];
-            }
+        $collectionCountPath = array("_embedded", "collections", "page", "totalElements");
+        if ($this->checkPath($collectionCountPath, $section, self::COLLECTION)) {
+            return $section["_embedded"]["collections"]["page"]["totalElements"];
         }
         return "0";
     }
     private function getLogoFromResponse(?array $response) : string {
         if ($response) {
-            if ($this->checkKey("_embedded", $response)) {
-                if ($this->checkKey("logo", $response["_embedded"])) {
-                    if ($this->checkKey("_links", $response["_embedded"]["logo"])) {
-                        if ($this->checkKey("content", $response["_embedded"]["logo"]["_links"])) {
-                            if ($this->checkKey("href", $response["_embedded"]["logo"]["_links"]["content"])) {
-                                return $response["_embedded"]["logo"]["_links"]["content"]["href"];
-                            }
-                        }
+
+            $logoPath = array("_embedded", "logo");
+            $logoLinkPath = array("_links","content", "href");
+
+            if ($this->checkPath($logoPath, $response, self::LOGO)) {
+                // response can be NULL
+                if (!is_null($response["_embedded"]["logo"])) {
+                    if ($this->checkPath($logoLinkPath, $response["_embedded"]["logo"], self::LOGO)) {
+                        return $response["_embedded"]["logo"]["_links"]["content"]["href"];
                     }
                 }
             }
         } else {
-            error_log("DSpace response did not include a logo");
+            error_log("WARNING: DSpace response did not include a logo");
         }
         return "";
     }
@@ -573,17 +564,14 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $owner = array();
         if ($response) {
 
-            if ($this->checkKey("_embedded", $response)) {
-                if ($this->checkKey("owningCollection", $response["_embedded"])) {
-                    $owner["name"] = $response["_embedded"]["owningCollection"]["name"];
-                    $owner["uuid"] = $response["_embedded"]["owningCollection"]["uuid"];
-                    if ($this->checkKey("_links", $response["_embedded"]["owningCollection"])) {
-                        if ($this->checkKey("self", $response["_embedded"]["owningCollection"]["_links"])) {
-                            if ($this->checkKey("href", $response["_embedded"]["owningCollection"]["_links"]["self"])) {
-                                $owner["href"] = $response["_embedded"]["owningCollection"]["_links"]["self"]["href"];
-                            }
-                        }
-                    }
+            $embedPath = array("_embedded", "owningCollection");
+            $owingLinkPath = array("_links", "self", "href");
+
+            if ($this->checkPath($embedPath, $response, self::COLLECTION)) {
+                $owner["name"] = $response["_embedded"]["owningCollection"]["name"];
+                $owner["uuid"] = $response["_embedded"]["owningCollection"]["uuid"];
+                if ($this->checkPath($owingLinkPath, $response["_embedded"]["owningCollection"], self::COLLECTION)) {
+                    $owner["href"] = $response["_embedded"]["owningCollection"]["_links"]["self"]["href"];
                 }
             }
         } else {
@@ -626,18 +614,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $object->setCreator($data["metadata"]["dc.contributor.author"][0]["value"]);
             }
         }
-        if ($this->checkKey("_embedded", $data, self::DISCOVERY)) {
-        if ($this->checkKey("thumbnail", $data["_embedded"], self::DISCOVERY)) {
-            if ($this->checkKey("name", $data["_embedded"]["thumbnail"], self::DISCOVERY)) {
-                $object->setThumbnailName($data["_embedded"]["thumbnail"]["name"]);
-            }
-            if ($this->checkKey("_links", $data["_embedded"]["thumbnail"], self::DISCOVERY)) {
-                if ($this->checkKey("content", $data["_embedded"]["thumbnail"]["_links"], self::DISCOVERY)) {
-                    $object->setThumbnailHref($data["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
-                }
-            }
+        $thumbNamePath = array("_embedded","thumbnail","name");
+        $thumbLinkPath = array("_embedded", "thumbnail","_links","content","href");
+
+        if ($this->checkPath($thumbNamePath, $data, self::DISCOVERY)) {
+            $object->setThumbnailName($data["_embedded"]["thumbnail"]["name"]);
         }
+        if ($this->checkPath($thumbLinkPath, $data, self::DISCOVERY)) {
+            $object->setThumbnailHref($data["_embedded"]["thumbnail"]["_links"]["content"]["href"]);
         }
+
         return $object->getData();
     }
 
@@ -687,14 +673,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      */
     private function getBundle(array $bundles, string $bundleName): array
     {
+        $bundlesPath = array("_embedded","bundles");
         $bundle = array();
-        if ($this->checkKey("_embedded", $bundles)) {
-            if ($this->checkKey("bundles", $bundles["_embedded"])) {
-                foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
-                    $b = $currentBundle["name"];
-                    if ($b == $bundleName) {
-                        $bundle = $currentBundle;
-                    }
+        if ($this->checkPath($bundlesPath, $bundles, self::BUNDLE)) {
+            foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
+                $b = $currentBundle["name"];
+                if ($b == $bundleName) {
+                    $bundle = $currentBundle;
                 }
             }
         }
@@ -720,43 +705,32 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      */
     private function getCollections(array $communityCollections, bool $reverseOrder = true): array
     {
-        $collectionMap = array();
-        if ($this->checkKey("_embedded", $communityCollections)) {
-            if ($this->checkKey("collections", $communityCollections["_embedded"])) {
-                foreach ($communityCollections["_embedded"]["collections"] as $collection) {
-                    $model = $this->dataObjects->getCollectionModel();
-                    if ($this->config["retrieveItemCounts"]) {
-                        $itemCount = $this->getItemCount($collection["uuid"]);
-                        $model->setItemCount($itemCount);
-                    }
-                    if ($this->checkKey("_embedded", $collection)) {
-                        if ($this->checkKey("logo", $collection["_embedded"])) {
-                            if ($this->checkKey("_links", $collection["_embedded"]["logo"])) {
-                                if ($this->checkKey("content", $collection["_embedded"]["logo"]["_links"])) {
-                                    $logoHref = $collection["_embedded"]["logo"]["_links"]["content"]["href"];
-                                    if ($logoHref) {
-                                        $model->setLogo($logoHref);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    $model->setName($collection["name"]);
-                    $model->setUUID($collection["uuid"]);
-                    if ($this->checkKey("metadata", $collection)) {
-                        if ($this->checkKey("dc.description", $collection["metadata"])) {
-                            $model->setDescription($collection["metadata"]["dc.description"][0]["value"]);
-                        }
-                        if ($this->checkKey("dc.description.abstract", $collection["metadata"])) {
-                            $model->setShortDescription($collection["metadata"]["dc.description.abstract"][0]["value"]);
-                        }
-                    }
-                    $collectionMap[] = $model->getData();
-                }
+        $embeddedCollectionsPath = array("_embedded", "collections");
 
-                if ($reverseOrder) {
-                    return array_reverse($collectionMap, false);
+        $collectionMap = array();
+        if ($this->checkPath($embeddedCollectionsPath, $communityCollections, self::COLLECTION)) {
+            foreach ($communityCollections["_embedded"]["collections"] as $collection) {
+                $model = $this->dataObjects->getCollectionModel();
+                if ($this->config["retrieveItemCounts"]) {
+                    $itemCount = $this->getItemCount($collection["uuid"]);
+                    $model->setItemCount($itemCount);
                 }
+                $model->setLogo($this->getLogoFromResponse($collection));
+                $model->setName($collection["name"]);
+                $model->setUUID($collection["uuid"]);
+                if ($this->checkKey("metadata", $collection)) {
+                    if ($this->checkKey("dc.description", $collection["metadata"])) {
+                        $model->setDescription($collection["metadata"]["dc.description"][0]["value"]);
+                    }
+                    if ($this->checkKey("dc.description.abstract", $collection["metadata"])) {
+                        $model->setShortDescription($collection["metadata"]["dc.description.abstract"][0]["value"]);
+                    }
+                }
+                $collectionMap[] = $model->getData();
+            }
+
+            if ($reverseOrder) {
+                return array_reverse($collectionMap, false);
             }
         }
         return $collectionMap;
@@ -778,18 +752,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      */
     private function getBitstreams(array $bundle): ObjectsList
     {
+        $bitstreamsTotal = array("_embedded","bitstreams","page","totalElements");
+        $bitstreamObjects = array("_embedded","bitstreams","_embedded","bitstreams");
+
         $result = $this->dataObjects->getObjectsList();
         $bitstreams = array();
-        if ($this->checkKey("bitstreams", $bundle["_embedded"], self::BUNDLE)) {
-            if ($this->checkKey("page", $bundle["_embedded"]["bitstreams"], self::BUNDLE)) {
-                $result->setCount($bundle["_embedded"]["bitstreams"]["page"]["totalElements"]);
-            }
-            if ($this->checkKey("_embedded", $bundle["_embedded"]["bitstreams"], self::BUNDLE)) {
-                if ($this->checkKey("bitstreams", $bundle["_embedded"]["bitstreams"]["_embedded"],
-                    self::BUNDLE)) {
-                    $bitstreams = $bundle["_embedded"]["bitstreams"]["_embedded"]["bitstreams"];
-                }
-            }
+        if ($this->checkPath($bitstreamsTotal, $bundle, self::BUNDLE)) {
+            $result->setCount($bundle["_embedded"]["bitstreams"]["page"]["totalElements"]);
+        }
+        if ($this->checkPath($bitstreamObjects, $bundle, self::BUNDLE)) {
+            $bitstreams = $bundle["_embedded"]["bitstreams"]["_embedded"]["bitstreams"];
         }
         $imageArr = array();
 
@@ -870,10 +842,26 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     }
 
     private function getTotal(array $object) {
-        if ($this->checkKey("page", $object)) {
+        $totalPath = array("page", "totalElements");
+        if ($this->checkPath($totalPath, $object, self::COMMUNITY)) {
             return $object["page"]["totalElements"];
         }
         return 0;
+    }
+
+    private function checkPath(array $path, array $array, string $type = "") : bool {
+        if (!$path || count($path) == 0) {
+            error_log("ERROR: Invalid path array.");
+            return false;
+        }
+        $keyList = $path[0];
+        foreach($path as $key) {
+            if (!$this->checkKey($keyList, $array, $type)) {
+                $keyList .= $key;
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -887,7 +875,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         if(!is_null($array)) {
             $found = array_key_exists($key, $array);
-            if (!$found) {
+            if (!$found && $this->config["debug"]) {
                 error_log("WARNING: Failed to find the key '" . $key . "' in the DSpace " . $type . " response.");
             }
             return $found;
@@ -943,6 +931,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
         return json_decode($response, true);
     }
+
 
     private function checkUUID($uuid): void
     {
