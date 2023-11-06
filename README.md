@@ -7,6 +7,22 @@ The client returns only "essential" information about DSpace objects. The goal i
 constructing websites that incorporate information from the DSpace repository, omitting the more extensive 
 information needed to create a fully-featured DSpace user interface. 
 
+**Contents:**
+- Endpoints
+  - [Top Level Sections](#toplevel)
+  - [Single Section](#section)
+  - [List of Subsections](#subsections)
+  - [List of Collections in Section](#sections-collections)
+  - [Single Collection](#collections)
+  - [List of Items in Collection](#items-collections)
+  - [Single Item](#item)
+  - [List of Files for Item](#files)
+  - [Single File](#single-file)
+  - [Search Queries](#search)
+  - [Count of Items in Collection](#itemcount)
+- [Pagination](#pagination)
+- [Configuration](#config)
+
 # Endpoints
 
 ## /api/endpoints
@@ -15,6 +31,7 @@ List of endpoints.
 
 ___
 
+<a id="toplevel"></a>
 ## /api/toplevel
 
 Gets information about the top-level communities (sections)
@@ -55,6 +72,7 @@ Sample JSON response:
 
 ___
 
+<a id="section"></a>
 ## /api/sections/<:uuid>
 
 Gets information about a specific community (section).
@@ -82,6 +100,7 @@ Sample JSON response:
 ___
 
 
+<a id="subsections"></a>
 ## /api/sections/<:uuid>/subsections
 
 Gets list of subsections within the section with the provided uuid.
@@ -138,6 +157,7 @@ Sample JSON response:
 ___
 
 
+<a id="sections-collections"></a>
 ## /api/sections/<:uuid>/collections
 
 List of the collections within the section with the provided uuid.
@@ -192,6 +212,7 @@ Sample JSON response:
 
 ___
 
+<a id="collections"></a>
 ## /api/collections/<:uuid>
 
 Information about a specific DSpace collection. Includes the 
@@ -220,6 +241,7 @@ Sample JSON response:
 
 ___
 
+<a id="items-collections"></a>
 ## /api/collections/<:uuid>/items
 
 List of items within a specific DSpace collection with the provided uuid. 
@@ -287,6 +309,7 @@ Sample JSON Response:
 ```
 ___
 
+<a id="item"></a>
 ## /api/items/<:uuid>
 
 Information about a specific DSpace item. 
@@ -322,9 +345,10 @@ Sample JSON Response:
 ```
 ___
 
+<a id="files"></a>
 ## /api/items/<:uuid>/files
 
-Gets list of files for item with the provided DSpace uuid.
+Gets list of files for the item with the provided DSpace uuid.
 
 ### Parameters
 
@@ -371,6 +395,7 @@ Sample JSON response:
 ```
 ___
 
+<a id="single-file"></a>
 ## /api/files/<:uuid>
 
 Information about the file with the provided DSpace uuid.
@@ -406,6 +431,7 @@ Sample JSON response:
 
 ___
 
+<a id="search"></a>
 ## /api/search
 
 Search for DSpace items, collections and communities (sections). Response includes the
@@ -472,9 +498,12 @@ Sample JSON response:
 
 ```
 
+<a id="itemcount"></a>
 ## /api/collections/<:uuid>/itemcount
 
-Returns the count of items for the collection with the provided uuid. 
+Returns the count of items for the collection with the provided uuid. This
+is a special endpoint that can be used to request counts asynchronously.
+See Configuration parameter "retrieveItemCounts".
 
 ### Parameters
 
@@ -489,6 +518,7 @@ Sample JSON response:
 "180"
 ```
 
+<a id="pagination"></a>
 # Pagination
 
 List endpoints accept pagination parameters. 
@@ -517,7 +547,7 @@ For example, to request the next page of search results:
 http://localhost/api/search?query=test+query&page=2&size=20
 ```
 
-
+<a id="config"></a>
 # Configuration
 
 ```
