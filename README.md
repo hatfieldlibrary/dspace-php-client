@@ -489,6 +489,35 @@ Sample JSON response:
 "180"
 ```
 
+# Pagination
+
+List endpoints return and accept pagination parameters. 
+
+Sample pagination in response, with both next and previous results available: 
+
+```json{
+  "pagination": {
+    "next": [ 
+       "page" : "2",
+       "size": "20"
+       ]
+    "prev": [ 
+    "page" : "0",
+     "size": "20"
+     ]
+  }
+  
+```
+
+You can use this information for next and previous links in API requests.
+
+For example, to request the next page of search results:
+
+```html
+http://localhost/api/search?query=test+query&page=2&size=20
+```
+
+
 # Configuration
 
 ```
