@@ -162,8 +162,11 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $url .= '?' . http_build_query($query);
         }
         $collection = $this->getRestApiResponse($url);
+        $model = $this->dataObjects->getCollectionModel();
         $logoHref = $this->getLogoFromResponse($collection);
+        // Makes extra call to get the item count.
         $itemCount = $this->getItemCount($collection["uuid"]);
+        $model->setItemCount($itemCount);
         $description = "";
         $shortDescription = "";
         if ($this->checkKey("metadata", $collection, self::COLLECTION)) {
@@ -174,13 +177,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $description = $collection["metadata"]["dc.description"][0]["value"];
             }
         }
-        $model = $this->dataObjects->getCollectionModel();
+
         $model->setName($collection["name"]);
         $model->setUUID($collection["uuid"]);
         $model->setDescription($description);
         $model->setShortDescription($shortDescription);
         $model->setLogo($logoHref);
-        $model->setItemCount($itemCount);
         return $model->getData();
     }
 
@@ -270,7 +272,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $query = array (
             "page" => 0,
             "size" => $this->config["defaultPageSize"],
-            "embed" => "collection/logo"
+            "embed" => "logo"
         );
         if ($this->checkKey("page", $params, self::PARAMS)) {
             $query["page"] = $params["page"];
@@ -439,6 +441,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         }
         $result->setObjects($objects);
         return $result->getData();
+    }
+
+    /**
+     * Returns the count of items for the collection with the provided uuid.
+     * @param string $uuid collection uuid
+     * @return string the number of items
+     */
+    function getItemCountForCollection(string $uuid): string {
+        return $this->getItemCount($uuid);
     }
 
     /**
@@ -713,12 +724,23 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if ($this->checkKey("_embedded", $communityCollections)) {
             if ($this->checkKey("collections", $communityCollections["_embedded"])) {
                 foreach ($communityCollections["_embedded"]["collections"] as $collection) {
-                    $logoHref = $this->getCollectionLogo($collection["uuid"]);
-                    $itemCount = $this->getItemCount($collection["uuid"]);
-
                     $model = $this->dataObjects->getCollectionModel();
-                    $model->setItemCount($itemCount);
-                    $model->setLogo($logoHref);
+                    if ($this->config["retrieveItemCounts"]) {
+                        $itemCount = $this->getItemCount($collection["uuid"]);
+                        $model->setItemCount($itemCount);
+                    }
+                    if ($this->checkKey("_embedded", $collection)) {
+                        if ($this->checkKey("logo", $collection["_embedded"])) {
+                            if ($this->checkKey("_links", $collection["_embedded"]["logo"])) {
+                                if ($this->checkKey("content", $collection["_embedded"]["logo"]["_links"])) {
+                                    $logoHref = $collection["_embedded"]["logo"]["_links"]["content"]["href"];
+                                    if ($logoHref) {
+                                        $model->setLogo($logoHref);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     $model->setName($collection["name"]);
                     $model->setUUID($collection["uuid"]);
                     if ($this->checkKey("metadata", $collection)) {

@@ -9,7 +9,7 @@ class Collection implements Model {
     private $description = "";
     private $shortDescription = "";
     private $logo = "";
-    private string $itemCount = "0";
+    private string $itemCount = "";
 
     /**
      * Set the name of the community.
@@ -79,9 +79,11 @@ class Collection implements Model {
     {
         $response = array(
             "name" => $this->name,
-            "uuid" => $this->uuid,
-            "itemCount" => $this->itemCount,
+            "uuid" => $this->uuid
         );
+        if (strlen($this->itemCount) > 0) {
+            $response["itemCount"] = $this->itemCount;
+        }
         if (strlen($this->shortDescription) > 0) {
             $response["shortDescription"] = $this->shortDescription;
         }

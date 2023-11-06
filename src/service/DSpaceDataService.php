@@ -193,4 +193,6 @@ interface DSpaceDataService {
      */
     function getSection(string $uuid): array;
 
+    function getItemCountForCollection(string $uuid): string;
+
 }

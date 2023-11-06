@@ -145,6 +145,17 @@ class Controller
         }
     }
 
+    public function collectionsitemcount($uuid): void
+    {
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        if ($requestMethod == 'GET') {
+            $response = $this->service->getItemCountForCollection($uuid);
+            $this->utils->outputJSON($response);
+        } else {
+            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
+        }
+    }
+
     public function endpoints(): void
     {
         $endpoints = array (
