@@ -493,7 +493,7 @@ Sample JSON response:
 
 List endpoints return and accept pagination parameters. 
 
-Sample pagination in response, with both next and previous results available: 
+This is a sample pagination element in a response. Both next and previous results available. 
 
 ```json{
   "pagination": {
@@ -509,7 +509,7 @@ Sample pagination in response, with both next and previous results available:
   
 ```
 
-You can use this information for next and previous links in API requests.
+You can use this information to creat next and previous page requests.
 
 For example, to request the next page of search results:
 
