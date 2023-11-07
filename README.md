@@ -1,11 +1,16 @@
 # DSpace PHP REST
-PHP REST API and client for read-only DSpace API information.
 
-The client provides functions for DSpace API queries to retrieve Community, Collection, Item and Bitstream information.
+A PHP REST API that serves as middleware for read-only DSpace API information.
 
-The client returns only "essential" information about DSpace objects. The goal is to provide a simple tool for 
-constructing websites that incorporate information from the DSpace repository, omitting the more extensive 
-information needed to create a fully-featured DSpace user interface. 
+The API provides endpoints that retrieve Community, Collection, Item and Bitstream information from DSpace and
+return simplified responses.
+
+The responses contain only "essential" information about DSpace objects. The goal is to provide an easy-to-use service
+for constructing websites, omitting the more extensive information needed to create a fully-featured DSpace 
+user interface. 
+
+The `DSpaceDataService` implementation can also be included in a PHP webpage and used to access DSpace
+content without using the PHP API.
 
 **Contents:**
 - Endpoints
