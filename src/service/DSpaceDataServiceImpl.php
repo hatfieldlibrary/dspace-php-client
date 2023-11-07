@@ -59,7 +59,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $model->getData();
     }
 
-    public function getTopLevelSections($params = []) : array {
+    public function getTopLevelSections(array $params = []) : array {
         $sectionsMap = array();
         $query = array (
             "page" => 0,
@@ -509,7 +509,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return "0";
     }
 
-    private function getSubSectionCountForSection($section): string
+    private function getSubSectionCountForSection(array $section): string
     {
         $sectionCountPath = array("_embedded", "subcommunities", "page", "totalElements");
         if ($this->checkPath($sectionCountPath, $section, self::COMMUNITY)) {
@@ -518,7 +518,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return "0";
     }
 
-    private function getCollectionCountForSection($section): string
+    private function getCollectionCountForSection(array $section): string
     {
         $collectionCountPath = array("_embedded", "collections", "page", "totalElements");
         if ($this->checkPath($collectionCountPath, $section, self::COLLECTION)) {
@@ -546,7 +546,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return "";
     }
 
-    private function getOwningCollectionFromResponse($response) : array {
+    private function getOwningCollectionFromResponse(?array $response) : array {
         $owner = array();
         if ($response) {
 
@@ -814,12 +814,12 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         return $paginationModel->getData();
     }
 
-    private function getTotal(array $object) {
+    private function getTotal(array $object): string {
         $totalPath = array("page", "totalElements");
         if ($this->checkPath($totalPath, $object, self::COMMUNITY)) {
             return $object["page"]["totalElements"];
         }
-        return 0;
+        return "0";
     }
 
     private function checkPath(array $path, array $array, string $type = "") : bool {
