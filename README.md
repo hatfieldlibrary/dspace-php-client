@@ -1,11 +1,8 @@
 # DSpace PHP REST
 
-A PHP REST API that serves as middleware for read access to DSpace API information.
+This middleware exposes public information from a DSpace repository. 
 
-The API provides endpoints that retrieve Community, Collection, Item and Bitstream information from DSpace and
-return simplified responses.
-
-The responses contain only "essential" information about DSpace objects. The goal is to provide an easy-to-use service
+The API endpoints retrieve Community, Collection, Item and Bitstream information from the DSpace REST API and return simplified responses. The responses contain only "essential" information about DSpace objects. The goal is to provide an easy-to-use service
 for constructing websites, omitting the more extensive information needed to create a fully-featured DSpace 
 user interface. 
 
