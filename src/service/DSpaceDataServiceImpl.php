@@ -211,10 +211,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                 $model->setOwningCollectionHref($this->getObjectFromResponse($owningCollectionPath, $object, self::ITEM));
                 $model->setThumbnail($this->getObjectFromResponse($thumbPath, $object, self::ITEM));
                 $itemsArr[] = $model->getData();
-                $objectsListModel->setCount($this->getTotal($parent));
-                $objectsListModel->setPagination($this->getPagination($parent));
             }
         }
+        $objectsListModel->setCount($this->getTotal($parent));
+        $objectsListModel->setPagination($this->getPagination($parent));
         $objectsListModel->setObjects($itemsArr);
         return $objectsListModel->getData();
     }
