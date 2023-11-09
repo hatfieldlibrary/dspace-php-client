@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ . "/../Configuration.php";
 require __DIR__ . "/DSpaceDataService.php";
 require __DIR__ . "/DataObjects.php";
 require_once __DIR__ . "/../Utils.php";
@@ -29,11 +28,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
     public function __construct()
     {
-        $settings = new Configuration();
-        $this->config = $settings->getConfig();
-        $this->dataObjects = new DataObjects();
         $this->utils = new Utils();
-
+        $this->config = $this->utils->getConfig();
+        $this->dataObjects = new DataObjects();
     }
 
     public function getTopLevelSections(array $params = []) : array {

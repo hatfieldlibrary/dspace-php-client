@@ -14,6 +14,10 @@ class Utils {
         $this->config = $settings->getConfig();
     }
 
+    public function getConfig(): array {
+        return $this->config;
+    }
+
     public function getQueryStringParams(): array
     {
         if(array_key_exists("QUERY_STRING", $_SERVER)) {
