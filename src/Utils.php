@@ -49,7 +49,7 @@ class Utils {
     public function checkUUID($uuid): void
     {
         if (!$uuid) {
-            $this->utils->outputJSON("Required DSpace UUID is missing from the request.",
+            $this->outputJSON("Required DSpace UUID is missing from the request.",
                 array("HTTP/1.1 400 Invalid Request"));
             exit;
         }
