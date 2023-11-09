@@ -54,18 +54,18 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $response = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response path
         $embeddedSectionsPath = array("_embedded", "communities");
 
-        $sections = $this->getObjectFromResponse($embeddedSectionsPath, $response, self::COMMUNITY);
+        $sections = $this->getObjectFromResponse($embeddedSectionsPath, $dspaceResponse, self::COMMUNITY);
         foreach ($sections as $section) {
             $sectionsMap[$section["name"]] = $this->getSectionInfo($section);
         }
         $objectsModel = $this->dataObjects->getObjectsList();
-        $objectsModel->setCount($this->getTotal($response));
-        $objectsModel->setPagination($this->getPagination($response));
+        $objectsModel->setCount($this->getTotal($dspaceResponse));
+        $objectsModel->setPagination($this->getPagination($dspaceResponse));
         $objectsModel->setObjects($sectionsMap);
         return $objectsModel->getData();
     }
@@ -89,17 +89,21 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $result = $this->dataObjects->getObjectsList();
-        $subCommunities = $this->utils->getRestApiResponse($url);
-        if ($this->utils->checkKey("subcommunities", $subCommunities["_embedded"], self::COMMUNITY)) {
-            foreach ($subCommunities["_embedded"]["subcommunities"] as $section) {
-                $subcommitteeMap[$section["name"]] = $this->getSectionInfo($section);
-            }
-            $result->setCount($this->getTotal($subCommunities));
-            $result->setPagination($this->getPagination($subCommunities));
-            $result->setObjects($subcommitteeMap);
+        $objectsModel = $this->dataObjects->getObjectsList();
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
+
+        // DSpace response paths
+        $subsectionsPath = array("_embedded", "subcommunities");
+
+        $subsections = $this->getObjectFromResponse($subsectionsPath, $dspaceResponse, self::COMMUNITY);
+        foreach($subsections as $section) {
+            $subcommitteeMap[$section["name"]] = $this->getSectionInfo($section);
         }
-        return $result->getData();
+        $objectsModel->setCount($this->getTotal($dspaceResponse));
+        $objectsModel->setPagination($this->getPagination($dspaceResponse));
+        $objectsModel->setObjects($subcommitteeMap);
+
+        return $objectsModel->getData();
     }
 
     public function getSection(string $uuid): array {
@@ -111,16 +115,16 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $section = $this->utils->getRestApiResponse($url);
-        $sectionCount = $this->getSubSectionCountForSection($section);
-        $collectionCount = $this->getCollectionCountForSection($section);
-        $logoHref = $this->getLogoFromResponse($section);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
+        $sectionCount = $this->getSubSectionCountForSection($dspaceResponse);
+        $collectionCount = $this->getCollectionCountForSection($dspaceResponse);
+        $logoHref = $this->getLogoFromResponse($dspaceResponse);
         $model = $this->dataObjects->getSectionModel();
         $model->setCollectionCount($collectionCount);
         $model->setSubSectionCount($sectionCount);
         $model->setCollectionCount($collectionCount);
-        $model->setName($section["name"]);
-        $model->setUUID($section["uuid"]);
+        $model->setName($dspaceResponse["name"]);
+        $model->setUUID($dspaceResponse["uuid"]);
         $model->setLogo($logoHref);
         return $model->getData();
     }
@@ -135,22 +139,22 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $collection = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response paths
         $abstractPath = array("metadata","dc.description.abstract");
         $descPath = array("metadata","dc.description");
 
-        $logoHref = $this->getLogoFromResponse($collection);
+        $logoHref = $this->getLogoFromResponse($dspaceResponse);
         // Always make extra call to get the item count.
-        $itemCount = $this->getItemCount($collection["uuid"]);
+        $itemCount = $this->getItemCount($dspaceResponse["uuid"]);
 
         $collectionModel = $this->dataObjects->getCollectionModel();
         $collectionModel->setItemCount($itemCount);
-        $collectionModel->setName($collection["name"]);
-        $collectionModel->setUUID($collection["uuid"]);
-        $shortDescription = $this->getMetadataFirstValue($abstractPath, $collection, self::COLLECTION);
-        $description = $this->getMetadataFirstValue($descPath, $collection, self::COLLECTION);
+        $collectionModel->setName($dspaceResponse["name"]);
+        $collectionModel->setUUID($dspaceResponse["uuid"]);
+        $shortDescription = $this->getMetadataFirstValue($abstractPath, $dspaceResponse, self::COLLECTION);
+        $description = $this->getMetadataFirstValue($descPath, $dspaceResponse, self::COLLECTION);
         $collectionModel->setDescription($description);
         $collectionModel->setShortDescription($shortDescription);
         $collectionModel->setLogo($logoHref);
@@ -177,7 +181,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $restResponse = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response paths.
         $titlePath = array("metadata", "dc.title");
@@ -192,8 +196,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
         $itemsArr = array();
         $objectsListModel = $this->dataObjects->getObjectsList();
-        $embeddedResult = $this->getObjectFromResponse($resultPath, $restResponse, self::DISCOVERY);
-        $parent = $this->getObjectFromResponse($parentObject, $restResponse, self::DISCOVERY);
+        $embeddedResult = $this->getObjectFromResponse($resultPath, $dspaceResponse, self::DISCOVERY);
+        $parent = $this->getObjectFromResponse($parentObject, $dspaceResponse, self::DISCOVERY);
         foreach ($embeddedResult as &$restElement) {
             foreach ($restElement as &$item) {
                 $model = $this->dataObjects->getItemModel();
@@ -233,11 +237,11 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $communityCollections = $this->utils->getRestApiResponse($url);
-        $collections = $this->getCollections($communityCollections, $reverseOrder);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
+        $collections = $this->getCollections($dspaceResponse, $reverseOrder);
         $objectsModel = $this->dataObjects->getObjectsList();
-        $objectsModel->setCount($this->getTotal($communityCollections));
-        $objectsModel->setPagination($this->getPagination($communityCollections));
+        $objectsModel->setCount($this->getTotal($dspaceResponse));
+        $objectsModel->setPagination($this->getPagination($dspaceResponse));
         $objectsModel->setObjects($collections);
         return $objectsModel->getData();
     }
@@ -252,7 +256,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $item = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response paths
         $titlePath = array("metadata","dc.title");
@@ -264,20 +268,20 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $thumbPath = array("_embedded","thumbnail","_links","self","href");
 
         $itemModel = $this->dataObjects->getItemModel();
-        $itemModel->setName($item["name"]);
-        $itemModel->setUUID($item["uuid"]);
-        $itemModel->setTitle($this->getMetadataFirstValue($titlePath, $item, self::ITEM));
-        $itemModel->setAuthor($this->getMetadataFirstValue($creatorPath, $item, self::ITEM));
-        $itemModel->setDate($this->getMetadataFirstValue($datePath, $item, self::ITEM));
-        $itemModel->setRights($this->getMetadataFirstValue($rightsPath, $item, self::ITEM));
-        $itemModel->setRightsLink($this->getMetadataFirstValue($rightsPathUri, $item, self::ITEM));
-        $desc = $this->getMetadataFirstValue($descriptionPath, $item, self::ITEM);
+        $itemModel->setName($dspaceResponse["name"]);
+        $itemModel->setUUID($dspaceResponse["uuid"]);
+        $itemModel->setTitle($this->getMetadataFirstValue($titlePath, $dspaceResponse, self::ITEM));
+        $itemModel->setAuthor($this->getMetadataFirstValue($creatorPath, $dspaceResponse, self::ITEM));
+        $itemModel->setDate($this->getMetadataFirstValue($datePath, $dspaceResponse, self::ITEM));
+        $itemModel->setRights($this->getMetadataFirstValue($rightsPath, $dspaceResponse, self::ITEM));
+        $itemModel->setRightsLink($this->getMetadataFirstValue($rightsPathUri, $dspaceResponse, self::ITEM));
+        $desc = $this->getMetadataFirstValue($descriptionPath, $dspaceResponse, self::ITEM);
         if ($formatDescription) {
             $desc = $this->formatDescription($desc);
         }
         $itemModel->setDescription($desc);
-        $itemModel->setThumbnail($this->getObjectFromResponse($thumbPath, $item, self::ITEM));
-        $owningCollection = $this->getOwningCollectionFromResponse($item);
+        $itemModel->setThumbnail($this->getObjectFromResponse($thumbPath, $dspaceResponse, self::ITEM));
+        $owningCollection = $this->getOwningCollectionFromResponse($dspaceResponse);
         $itemModel->setOwningCollectionName($owningCollection["name"]);
         $itemModel->setOwningCollectionUuid($owningCollection["uuid"]);
         $itemModel->setOwningCollectionHref($owningCollection["href"]);
@@ -297,8 +301,8 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $bundles = $this->utils->getRestApiResponse($url);
-        $bundle = $this->getBundle($bundles, $bundleName);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
+        $bundle = $this->getBundle($dspaceResponse, $bundleName);
         if (count($bundle) > 0) {
             try {
                 $result = $this->getBitstreams($bundle);
@@ -317,20 +321,20 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         $this->utils->checkUUID($uuid);
         $url = $this->config["base"] . "/core/bitstreams/" . $uuid;
-        $file = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response paths
         $thumbnailPath = array("_links","thumbnail","href");
         $filePath = array("_links", "content", "href");
-        
+
         $objectsModel = $this->dataObjects->getBitstreamModel();
-        $objectsModel->setName($file["name"]);
-        $objectsModel->setUuid($file["uuid"]);
-        $objectsModel->setHref($this->getObjectFromResponse($filePath, $file, self::BITSTREAM));
+        $objectsModel->setName($dspaceResponse["name"]);
+        $objectsModel->setUuid($dspaceResponse["uuid"]);
+        $objectsModel->setHref($this->getObjectFromResponse($filePath, $dspaceResponse, self::BITSTREAM));
         $objectsModel->setMimetype($this->getBitstreamFormat($uuid));
-        $thumbnail = $this->getThumbnailLink($this->getObjectFromResponse($thumbnailPath, $file, self::BITSTREAM));
+        $thumbnail = $this->getThumbnailLink($this->getObjectFromResponse($thumbnailPath, $dspaceResponse, self::BITSTREAM));
         $objectsModel->setThumbnail($thumbnail);
-        $this->getBitstreamMetadata($file, $objectsModel);
+        $this->getBitstreamMetadata($dspaceResponse, $objectsModel);
         return $objectsModel->getData();
     }
 
@@ -358,18 +362,18 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (!empty($query)) {
             $url .= '?' . http_build_query($query);
         }
-        $response = $this->utils->getRestApiResponse($url);
+        $dspaceResponse = $this->utils->getRestApiResponse($url);
 
         // DSpace response paths
         $embeddedResultPath = array("_embedded", "searchResult");
         $searchResultsPath = array("_embedded", "searchResult", "_embedded", "objects");
         $embeddedObject = array("_embedded", "indexableObject");
 
-        $searchResult = $this->getObjectFromResponse($embeddedResultPath, $response, self::DISCOVERY);
+        $searchResult = $this->getObjectFromResponse($embeddedResultPath, $dspaceResponse, self::DISCOVERY);
         $objectsModel = $this->dataObjects->getObjectsList();
         $objectsModel->setCount($this->getTotal($searchResult));
         $objectsModel->setPagination($this->getPagination($searchResult));
-        $respObjects = $this->getObjectFromResponse($searchResultsPath,$response, self::DISCOVERY);
+        $respObjects = $this->getObjectFromResponse($searchResultsPath,$dspaceResponse, self::DISCOVERY);
         $objects = array();
         foreach ($respObjects as $obj) {
             if ($this->utils->checkPath($embeddedObject, $obj, self::DISCOVERY)) {
@@ -595,7 +599,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $bundle = array();
 
         $bundlesPath = array("_embedded","bundles");
-        
+
         if ($this->utils->checkPath($bundlesPath, $bundles, self::BUNDLE)) {
             foreach($bundles["_embedded"]["bundles"] as &$currentBundle) {
                 $b = $currentBundle["name"];
@@ -661,7 +665,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $thumbnailPath = array("_links", "thumbnail", "href");
         $fileLinkPath = array("_links", "content", "href");
         $mimetypePath = array("_embedded", "format", "mimetype");
-        
+
         $imageArr = array();
         $bitstreams = $this->getObjectFromResponse($bitstreamObjects, $bundle, self::BUNDLE);
         foreach ($bitstreams as $file) {
