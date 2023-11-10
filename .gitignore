@@ -2,7 +2,5 @@ src/mimi
 
 vendor
 
-composer.*
-
 .idea
 dspace-php.iml
