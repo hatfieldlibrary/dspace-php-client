@@ -1,6 +1,5 @@
-src/mimi
-
 vendor
+composer.phar
 
 .idea
 dspace-php.iml
