@@ -25,6 +25,26 @@ content without using the PHP API.
 - [Pagination](#pagination)
 - [Configuration](#config)
 
+# Usage
+
+Simple example:
+http://localhost/example/index.php/api/endpoints
+
+To simplify the url, you can add an `.htaccess` file in the directory. The example
+assume the base directory is `/example` and redirects all requests to `index.php`.
+
+```shell
+RewriteEngine On
+RewriteBase /example
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.+)$ index.php [QSA,L]
+```
+
+Example of the new request URL:
+
+http://localhost/example/api/endpoints
+
 # Endpoints
 
 ## /api/endpoints

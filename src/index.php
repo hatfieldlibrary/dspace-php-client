@@ -12,23 +12,23 @@ $uri = $utils->getUriSegments();
 $response = "";
 
 
-if (count($uri) < 3) {
+if (count($uri) < 4) {
     error_log("ERROR: No method was provided in request.");
     $utils->outputJSON("404 Not Found. No method provided in request.", array('HTTP/1.1 404 Not Found.'));
 }
-if (count($uri) == 3) {
-    $resource = $uri[2];
+if (count($uri) == 4) {
+    $resource = $uri[3];
     $response = callController($controller, $utils, $resource);
 }
-if (count($uri) == 4) {
-    $resource = $uri[2];
-    $uuid = $uri[3];
+if (count($uri) == 5) {
+    $resource = $uri[3];
+    $uuid = $uri[4];
     $response = callController($controller, $utils, $resource, $uuid);
 }
-if (count($uri) == 5) {
-    $uuid = $uri[3];
-    $resource = $uri[2];
-    $qualifier = $uri[4];
+if (count($uri) == 6) {
+    $uuid = $uri[4];
+    $resource = $uri[3];
+    $qualifier = $uri[5];
     $method = $resource . $qualifier;
     $response = callController($controller, $utils, $method, $uuid);
 }
