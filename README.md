@@ -1,6 +1,6 @@
 # DSpace PHP REST
 
-This middleware exposes public information from a DSpace repository. 
+This middleware exposes public information from a DSpace repository. Requires PHP 8. No PHP REST API framework is used.
 
 The API endpoints retrieve Community, Collection, Item and Bitstream information from the DSpace REST API and return simplified responses. The responses contain only "essential" information about DSpace objects. The goal is to provide an easy-to-use service
 for constructing websites, omitting the more extensive information needed to create a fully-featured DSpace 
