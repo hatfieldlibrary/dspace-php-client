@@ -30,8 +30,8 @@ content without using the PHP API.
 Simple example:
 http://localhost/example/index.php/api/endpoints
 
-To simplify the url, you can add an `.htaccess` file in the directory. The example
-assume the base directory is `/example` and redirects all requests to `index.php`.
+To simplify the url and get rid of `index.php` you can add an `.htaccess` file to the base directory. This example
+assumes the base directory for the application is `/example` and redirects all requests to `index.php`.
 
 ```shell
 RewriteEngine On
@@ -41,9 +41,10 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.+)$ index.php [QSA,L]
 ```
 
-Example of the new request URL:
+Here's the new request URL:
 
 http://localhost/example/api/endpoints
+
 
 # Endpoints
 
