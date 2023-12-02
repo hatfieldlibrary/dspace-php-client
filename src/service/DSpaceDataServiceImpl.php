@@ -641,7 +641,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $datePath = array("metadata","dc.date.issued");
         $rightsPath = array("metadata","dc.rights");
         $rightsPathUri = array("metadata","dc.rights.uri");
-        $descriptionPath = array("metadata","dc.description.abstract");
+        $descriptionPath = array("metadata","dc.description");
         // End response paths
 
         $model->setName($item["name"]);
