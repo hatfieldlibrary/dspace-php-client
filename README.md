@@ -33,7 +33,7 @@ http://localhost/example/index.php/api/endpoints
 To simplify the url and get rid of `index.php` you can add an `.htaccess` file to the base directory. This example
 assumes the base directory for the application is `/example` and redirects all requests to `index.php`.
 
-```shell
+```
 RewriteEngine On
 RewriteBase /example
 RewriteCond %{REQUEST_FILENAME} !-d
