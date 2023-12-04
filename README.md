@@ -27,10 +27,11 @@ content without using the PHP API.
 
 # Usage
 
-Simple example:
+Simple example: copy the contents of the source directory to the web server and use this URL:
+
 http://localhost/example/index.php/api/endpoints
 
-To simplify the url and get rid of `index.php` you can add an `.htaccess` file to the base directory. This example
+Apache configuration example: To simplify the url and get rid of `index.php` you can add the following to your Apache configuration for the base directory. This example
 assumes the base directory for the application is `/example` and redirects all requests to `index.php`.
 
 ```
@@ -44,6 +45,8 @@ RewriteRule ^(.+)$ index.php [QSA,L]
 Here's the new request URL:
 
 http://localhost/example/api/endpoints
+
+If it's a production site, you should probably add a cache-control header to your Apache config as well.
 
 
 # Endpoints
