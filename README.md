@@ -10,6 +10,7 @@ The `DSpaceDataService` implementation can also be included in a PHP webpage and
 content without using the PHP API.
 
 **Contents:**
+- [Usage](#usage)
 - Endpoints
   - [Top Level Sections](#toplevel)
   - [Single Section](#section)
@@ -25,6 +26,7 @@ content without using the PHP API.
 - [Pagination](#pagination)
 - [Configuration](#config)
 
+<a id="usage"></a>
 # Usage
 
 Simple example: copy the contents of the source directory to the web server and use this URL:
