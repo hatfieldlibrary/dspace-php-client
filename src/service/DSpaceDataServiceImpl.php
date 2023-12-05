@@ -641,7 +641,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $datePath = array("metadata","dc.date.issued");
         $rightsPath = array("metadata","dc.rights");
         $rightsPathUri = array("metadata","dc.rights.uri");
+        // DSpace records can include dc.description, dc.description.abstract, none, or both.
+        // Honor all here.
         $descriptionPath = array("metadata","dc.description");
+        $abstractPath = array("metadata","dc.description.abstract");
         // End response paths
 
         $model->setName($item["name"]);
@@ -652,10 +655,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $model->setRights($this->getMetadataFirstValue($rightsPath, $item, self::ITEM));
         $model->setRightsLink($this->getMetadataFirstValue($rightsPathUri, $item, self::ITEM));
         $desc = $this->getMetadataFirstValue($descriptionPath, $item, self::ITEM);
+        $abs = $this->getMetadataFirstValue($abstractPath, $item, self::ITEM);
         if ($formatDescription) {
             $desc = $this->formatDescription($desc);
         }
+        if ($formatDescription) {
+            $abs = $this->formatDescription($abs);
+        }
         $model->setDescription($desc);
+        $model->setAbstract($abs);
     }
 
     /**

@@ -9,6 +9,7 @@ class Item implements Model {
     private string $creator = "";
     private string $date = "";
     private string $description = "";
+    private string $abstract = "";
     private string $owningCollectionHref = "";
     private string $owningCollectionName = "";
     private string $owningCollectionUuid  = "";
@@ -26,10 +27,14 @@ class Item implements Model {
         $this->uuid = $uuid;
     }
 
-
     public function setDescription(string $description): void
     {
         $this->description = $description;
+    }
+
+    public function setAbstract(string $abstract): void
+    {
+        $this->abstract = $abstract;
     }
 
     public function setDate(string $date): void
@@ -114,6 +119,9 @@ class Item implements Model {
         if (strlen($this->description) > 0) {
             $response["metadata"]["description"] = $this->description;
         }
+        if (strlen($this->abstract) > 0) {
+            $response["metadata"]["abstract"] = $this->abstract;
+        }
         if (strlen($this->creator) > 0) {
             $response["metadata"]["creator"] = $this->creator;
         }
@@ -140,6 +148,7 @@ class Item implements Model {
         }
         return $response;
     }
+
 
 
 }
