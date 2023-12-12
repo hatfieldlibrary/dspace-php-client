@@ -1,4 +1,8 @@
 <?php
+
+// For development use only.
+//header("Access-Control-Allow-Origin: *");
+
 require __DIR__ . "/Controller.php";
 require_once __DIR__ . "/Utils.php";
 

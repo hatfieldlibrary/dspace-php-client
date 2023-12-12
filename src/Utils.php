@@ -35,7 +35,7 @@ class Utils {
 
     public function outputJSON($output, $httpHeaders = array()): void
     {
-        $out = json_encode($output, true);
+        $out = json_encode($output);
         if (!$out) {
             $httpHeaders = array('HTTP/1.1 500 Server Error');
         }

@@ -26,10 +26,6 @@ class ObjectsList implements Model {
 
     function getData(): array
     {
-        // single object conversion to array
-        if (count($this->objects) == 1) {
-            $this->objects = [$this->objects];
-        }
 
         return array (
             "pagination" => $this->pagination,

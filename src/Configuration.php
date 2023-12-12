@@ -11,19 +11,22 @@ Class Configuration {
              * Base url of DSpace REST API
              */
             "base"=>"http://localhost:8080/server/api",
+            //"base"=>"https://digitalcollections.willamette.edu/server/api",
             /**
              * The default DSpace scope. Used for search.
              */
             "scope" => "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
+           // "scope" => "faa0b731-55c0-49e2-9ac0-0eb092097646",
             /**
              * The maximum number of items returned in requests for DSpace objects (e.g. Items, Collections).
-             * Currently this class does not support pagination.
              */
             "defaultPageSize" => 40,
             /**
              * The maximum number of embedded bitstreams (e.g. images) returned when retrieving images.
+             * The bitstreams are retrieved as embedded elements in the bundle. Pagination is not currently
+             * supported by this application.
              */
-            "defaultEmbeddedBitstreamParam" => 300,
+            "defaultEmbeddedBitstreamParam" => 60,
             /**
              * Default image used in no thumbnail is available.
              */

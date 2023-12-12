@@ -92,7 +92,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         // DSpace response path
         $subsectionsPath = array("_embedded", "subcommunities");
         // End response paths
-
         $subcommitteeMap = array();
         $subsections = $this->getObjectFromResponse($subsectionsPath, $dspaceResponse, self::COMMUNITY);
         foreach($subsections as $section) {
@@ -246,9 +245,11 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     public function getItemFiles(string $uuid, string $bundleName = "ORIGINAL"): array
     {
         $this->utils->checkUUID($uuid);
+        // I found this in the browser console, not in the REST contract. It doesn't seem
+        // to work.
         $query = array (
-            "size" => "9999",
-            "embed.size" > "bitstreams=" . $this->config["defaultEmbeddedBitstreamParam"],
+            "size" => $this->config["defaultEmbeddedBitstreamParam"],
+            "embed.size" => "bitstreams=" . $this->config["defaultEmbeddedBitstreamParam"],
             "embed" => "bitstreams/format"
         );
         $url = $this->config["base"] . "/core/items/" . $uuid . "/bundles";
@@ -262,6 +263,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (count($bundle) > 0) {
             try {
                 $result = $this->getBitstreams($bundle);
+
                 return $result->getData();
             } catch (Exception $err) {
                 error_log($err, 0);
@@ -675,6 +677,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
     {
         // DSpace response paths
         $bitstreamObjects = array("_embedded","bitstreams","_embedded","bitstreams");
+        $paginationPath = array("_embedded","bitstreams");
         $totalsPath = array("_embedded","bitstreams","page","totalElements");
         $thumbnailPath = array("_links", "thumbnail", "href");
         $fileLinkPath = array("_links", "content", "href");
@@ -683,6 +686,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
         $imageArr = array();
         $bitstreams = $this->getObjectFromResponse($bitstreamObjects, $bundle, self::BUNDLE);
+
         foreach ($bitstreams as $file) {
             $thumbnailInfo = $this->getObjectFromResponse($thumbnailPath, $file, self::BITSTREAM);
             $thumbnail = $this->getThumbnailLink($thumbnailInfo);
@@ -698,6 +702,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
             $imageArr[] = $bitstreamModel->getData();
         }
         $objectsModel = $this->dataObjects->getObjectsList();
+        if ($this->utils->checkPath($paginationPath, $bundle, self::BUNDLE)) {
+            $objectsModel->setPagination($this->getPagination($bundle["_embedded"]["bitstreams"]));
+        }
         $objectsModel->setObjects($imageArr);
         $objectsModel->setCount($this->getObjectFromResponse($totalsPath,$bundle, self::BUNDLE));
         return $objectsModel;

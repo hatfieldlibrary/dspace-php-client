@@ -594,8 +594,10 @@ http://localhost/api/search?query=test+query&page=2&size=20
 "defaultPageSize" => 40,
 /**
 * The maximum number of embedded bitstreams (e.g. images) returned when retrieving images.
+* The bitstreams are retrieved as embedded elements in the bundle. Pagination is not currently
+* supported by this application.
 */
-"defaultEmbeddedBitstreamParam" => 300,
+"defaultEmbeddedBitstreamParam" => 60,
 /**
 * Default image used in no thumbnail is available.
 */
