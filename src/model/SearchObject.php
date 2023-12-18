@@ -3,6 +3,7 @@
 require_once __DIR__ . "/Model.php";
 
 class SearchObject implements Model {
+
    private string $name = "";
    private string $uuid = "";
    private string $type = "";
@@ -86,5 +87,7 @@ class SearchObject implements Model {
         return $response;
 
     }
+
+
 
 }

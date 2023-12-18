@@ -331,6 +331,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
 
         $searchResult = $this->getObjectFromResponse($embeddedResultPath, $dspaceResponse, self::DISCOVERY);
         $objectsModel = $this->dataObjects->getObjectsList();
+        $objectsModel->setQuery($params["query"]);
         $objectsModel->setCount($this->getTotal($searchResult));
         $objectsModel->setPagination($this->getPagination($searchResult));
         $respObjects = $this->getObjectFromResponse($searchResultsPath,$dspaceResponse, self::DISCOVERY);

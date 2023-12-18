@@ -9,6 +9,8 @@ class ObjectsList implements Model {
 
     private string $count = "0";
 
+    private string $query = "";
+
     public function setPagination(array $pagination): void
     {
         $this->pagination = $pagination;
@@ -24,13 +26,23 @@ class ObjectsList implements Model {
         $this->count = $count;
     }
 
+    public function setQuery(string $query): void
+    {
+        $this->query = $query;
+    }
+
     function getData(): array
     {
-
-        return array (
+        $response = array(
             "pagination" => $this->pagination,
             "objects" => $this->objects,
-            "count" => $this->count
+            "count" => $this->count,
+
         );
+        if (strlen($this->query) > 0) {
+            $response["query"] = $this->query;
+        }
+        return $response;
     }
+
 }
