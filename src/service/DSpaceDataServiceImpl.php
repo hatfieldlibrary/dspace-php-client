@@ -263,7 +263,6 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         if (count($bundle) > 0) {
             try {
                 $result = $this->getBitstreams($bundle);
-
                 return $result->getData();
             } catch (Exception $err) {
                 error_log($err, 0);
@@ -285,13 +284,13 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $thumbnailPath = array("_links","thumbnail","href");
         $filePath = array("_links", "content", "href");
         // End response paths
-
         $objectsModel = $this->dataObjects->getBitstreamModel();
         $objectsModel->setName($dspaceResponse["name"]);
         $objectsModel->setUuid($dspaceResponse["uuid"]);
         $objectsModel->setHref($this->getObjectFromResponse($filePath, $dspaceResponse, self::BITSTREAM));
-        $objectsModel->setMimetype($this->getBitstreamFormat($uuid));
-        $thumbnail = $this->getThumbnailLink($this->getObjectFromResponse($thumbnailPath, $dspaceResponse, self::BITSTREAM));
+        $mimetype = $this->getBitstreamFormat($uuid);
+        $objectsModel->setMimetype($mimetype);
+        $thumbnail = $this->getThumbnailLink($this->getObjectFromResponse($thumbnailPath, $dspaceResponse, self::BITSTREAM), $mimetype);
         $objectsModel->setThumbnail($thumbnail);
         $this->setBitstreamMetadata($dspaceResponse, $objectsModel);
         return $objectsModel->getData();
@@ -538,10 +537,10 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      * @param string $href the endpoint for the thumbnail information.
      * @return string the thumbnail url
      */
-    private function getThumbnailLink(string $href): string
+    private function getThumbnailLink(string $href, string $mimetype): string
     {
         $images = $this->utils->getRestApiResponse($href);
-        return $this->getImageUrl($images);
+        return $this->getImageUrl($images, $mimetype);
     }
 
     /**
@@ -689,15 +688,15 @@ class DSpaceDataServiceImpl implements DSpaceDataService
         $bitstreams = $this->getObjectFromResponse($bitstreamObjects, $bundle, self::BUNDLE);
 
         foreach ($bitstreams as $file) {
+            $mimetype = $this->getObjectFromResponse($mimetypePath, $file, self::BITSTREAM);
             $thumbnailInfo = $this->getObjectFromResponse($thumbnailPath, $file, self::BITSTREAM);
-            $thumbnail = $this->getThumbnailLink($thumbnailInfo);
+            $thumbnail = $this->getThumbnailLink($thumbnailInfo, $mimetype);
             $mainImage = $this->getObjectFromResponse($fileLinkPath, $file, self::BITSTREAM);
-            $mimeType = $this->getObjectFromResponse($mimetypePath, $file, self::BITSTREAM);
             $bitstreamModel = $this->dataObjects->getBitstreamModel();
             $bitstreamModel->setName($file["name"]);
             $bitstreamModel->setUuid($file["uuid"]);
             $bitstreamModel->setHref($mainImage);
-            $bitstreamModel->setMimetype($mimeType);
+            $bitstreamModel->setMimetype($mimetype);
             $bitstreamModel->setThumbnail($thumbnail);
             $this->setBitstreamMetadata($file, $bitstreamModel);
             $imageArr[] = $bitstreamModel->getData();
@@ -717,7 +716,7 @@ class DSpaceDataServiceImpl implements DSpaceDataService
      * @param array|null $linkData array DSpace metadata for the image
      * @return string the content URL
      */
-    private function getImageUrl(?array $linkData) : string
+    private function getImageUrl(?array $linkData, string $mimetype) : string
     {
         if ($linkData) {
             if ($this->utils->checkKey("_links", $linkData, self::BITSTREAM)) {
@@ -728,6 +727,9 @@ class DSpaceDataServiceImpl implements DSpaceDataService
                     }
                 }
             }
+        }
+        if (preg_match("/video\//", $mimetype)) {
+            return $this->config["defaultVideoThumbnail"];
         }
         return $this->config["defaultThumbnail"];
     }

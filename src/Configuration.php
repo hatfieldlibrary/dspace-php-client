@@ -30,7 +30,11 @@ Class Configuration {
             /**
              * Default image used in no thumbnail is available.
              */
-            "defaultThumbnail" => "/mimi/images/pnca_mimi_default.jpeg",
+            "defaultThumbnail" => "/mimi_default_thumbnail.svg",
+            /**
+             * Default image used for videos.
+             */
+            "defaultVideoThumbnail" => "/default_video_thumbnail.svg",
             /**
              * Retrieve item counts for collections. There may be a performance hit when set to true.
              * Item counts can also be retrieved asynchronously via the <code>api/collections/<:uuid>/itemcount</code>
