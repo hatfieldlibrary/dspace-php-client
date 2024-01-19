@@ -11,16 +11,20 @@ Class Configuration {
              * Base url of DSpace REST API
              */
             "base"=>"http://localhost:8080/server/api",
-            //"base"=>"https://digitalcollections.willamette.edu/server/api",
+            /**
+             * Solr server (used for custom bitstream search)
+             */
+            "solr"=>"http://localhost:8983/solr",
+            "solr_core" => "bitstreams",
             /**
              * The default DSpace scope. Used for search.
              */
             "scope" => "602c3c60-55f8-4e2f-98bb-1f280a818bfe",
-           // "scope" => "faa0b731-55c0-49e2-9ac0-0eb092097646",
+            //"scope" => "d7ae580e-e8f7-4cd1-a7e4-3002882fbd0e",
             /**
              * The maximum number of items returned in requests for DSpace objects (e.g. Items, Collections).
              */
-            "defaultPageSize" => 40,
+            "defaultPageSize" => 24,
             /**
              * The maximum number of embedded bitstreams (e.g. images) returned when retrieving images.
              * The bitstreams are retrieved as embedded elements in the bundle. Pagination is not currently
@@ -30,11 +34,11 @@ Class Configuration {
             /**
              * Default image used in no thumbnail is available.
              */
-            "defaultThumbnail" => "/mimi_default_thumbnail.svg",
+            "defaultThumbnail" => "/mimi/mimi_default_thumbnail.svg",
             /**
              * Default image used for videos.
              */
-            "defaultVideoThumbnail" => "/default_video_thumbnail.svg",
+            "defaultVideoThumbnail" => "/mimi/default_video_thumbnail.svg",
             /**
              * Retrieve item counts for collections. There may be a performance hit when set to true.
              * Item counts can also be retrieved asynchronously via the <code>api/collections/<:uuid>/itemcount</code>

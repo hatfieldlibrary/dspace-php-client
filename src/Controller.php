@@ -1,10 +1,12 @@
 <?php
 
 require __DIR__ . "/service/DSpaceDataServiceImpl.php";
+require __DIR__ . "/service/SolrDataServiceImpl.php";
 require_once __DIR__ . "/Utils.php";
 class Controller
 {
     private DSpaceDataServiceImpl $service;
+    private SolrDataServiceImpl $solr;
     private Utils $utils;
     private array $config;
 
@@ -12,6 +14,7 @@ class Controller
     public function __construct()
     {
         $this->service = new DSpaceDataServiceImpl();
+        $this->solr = new SolrDataServiceImpl();
         $this->utils = new Utils();
         $settings = new Configuration();
         $this->config = $settings->getConfig();
@@ -154,6 +157,19 @@ class Controller
         } else {
             $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
         }
+    }
+
+    public function solr(): void
+    {
+        $queryStringParams = $this->utils->getQueryStringParams();
+        $requestMethod = $_SERVER["REQUEST_METHOD"];
+        if ($requestMethod == 'GET') {
+            $response = $this->solr->search($queryStringParams);
+            $this->utils->outputSolrResponse($response);
+        } else {
+            $this->utils->outputJSON('', array('HTTP/1.1 405 Method Not Allowed'));
+        }
+
     }
 
     public function endpoints(): void

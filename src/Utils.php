@@ -50,6 +50,18 @@ class Utils {
         exit;
     }
 
+    public function outputSolrResponse($output, $httpHeaders = array()): void
+    {
+        $httpHeaders[] = "Content-Type: application/json";
+        if (is_array($httpHeaders) && count($httpHeaders)) {
+            foreach ($httpHeaders as $httpHeader) {
+                header($httpHeader);
+            }
+        }
+        echo $output;
+        exit;
+    }
+
     public function checkUUID($uuid): void
     {
         if (!$uuid) {
@@ -148,6 +160,45 @@ class Utils {
         }
 
         return json_decode($response, true);
+    }
+
+    public function getSolrResponse(string $url): string
+    {
+        try {
+
+            if ($this->config["debug"]) {
+                error_log("DEBUG: DSpace API request: " . $url);
+            }
+            set_error_handler(
+                function ($err_severity, $err_msg, $err_file, $err_line)
+                { throw new ErrorException( $err_msg, 0, $err_severity, $err_file, $err_line ); },
+                E_WARNING
+            );
+
+            if ( ! function_exists( 'curl_init' ) ) {
+                die( 'The cURL library is not installed.' );
+            }
+            $ch = curl_init();
+            curl_setopt( $ch, CURLOPT_URL, $url );
+            curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+            $response = curl_exec( $ch );
+            curl_close( $ch );
+            restore_error_handler();
+            if ($this->config["debug"]) {
+                error_log("DEBUG: DSpace REST API response: " . $response);
+            }
+
+        } catch (Exception $err) {
+            error_log("ERROR: DSpace API request did not return data.");
+            error_log($err);
+            if (!headers_sent()) {
+                $this->outputJSON(self::REQUEST_FAILED,
+                    array("HTTP/1.1 400 Invalid Request"));
+            }
+            return self::REQUEST_FAILED;
+        }
+
+        return $response;
     }
 
 
